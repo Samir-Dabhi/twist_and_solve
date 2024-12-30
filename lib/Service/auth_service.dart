@@ -44,8 +44,41 @@ class AuthService {
     }
   }
 
-  void signup(String email,String password){
-    _isLoggedIn = true;
+  Future<bool> signup(String UserName,String email, String password) async {
+    const String url = 'http://192.168.1.7:5167/User';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(
+            {
+              "userId": 0,
+              "username": UserName,
+              "email": email,
+              "passwordHash": password,
+              "dateJoined": DateTime.now().toString(),
+              "profilePicture": "string",
+              "progressLevel": 0
+            }
+        ),
+      );
+      print(response.statusCode);
+      if (response.statusCode == 201) {
+        final responseData = jsonDecode(response.body);
+        _isLoggedIn = true; // Mark the user as authenticated
+        setEmailInPrefs(email);
+        setPasswordInPrefs(password);
+        setLoginStatusInPrefs(_isLoggedIn);
+        return true; // Indicate success
+      } else {
+        setLoginStatusInPrefs(_isLoggedIn);
+        throw Exception('Server error. Please try again later.');
+      }
+    } catch (e) {
+      setLoginStatusInPrefs(_isLoggedIn);
+      throw Exception('Error: $e');
+    }
   }
 
   void logout() {

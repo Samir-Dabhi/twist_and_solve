@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
         ),
         GoRoute(
           path: '/signup',
-          builder: (context, state) => SignupPage(authService: authService),
+          builder: (context, state) => SignUpPage(authService: authService),
         ),
         GoRoute(
           path: '/splash',
