@@ -55,7 +55,9 @@ class _TimerComponentState extends State<TimerComponent> {
     }
     return "$seconds:$milliseconds";
   }
-
+  // bool addSolveToApi(){
+  //
+  // }
   void resetTimer(){
     isStopedOnce = false;
     stopwatch.reset();
@@ -99,7 +101,7 @@ class _TimerComponentState extends State<TimerComponent> {
                 }, icon: const Icon(Icons.close)),
                 IconButton(onPressed: () {
                   setPreference(returnFormattedText());
-                  timeListglobel.add(returnFormattedText());//remove this after shared pref
+                  //TODO: api call for add solve here
                 }, icon: const Icon(Icons.done)),
                 IconButton(onPressed: () {
                   resetTimer();

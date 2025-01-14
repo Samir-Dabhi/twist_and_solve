@@ -8,7 +8,7 @@ class AuthService {
   bool get isLoggedIn => _isLoggedIn;
 
   Future<bool> login(String email, String password) async {
-    const String url = 'http://192.168.1.7:5167/User/auth';
+    const String url = 'http://10.70.20.214/User/auth';
 
     try {
       final response = await http.post(
@@ -45,7 +45,7 @@ class AuthService {
   }
 
   Future<bool> signup(String UserName,String email, String password) async {
-    const String url = 'http://192.168.1.7:5167/User';
+    const String url = 'http://10.20.56.138/User';
 
     try {
       final response = await http.post(
@@ -109,4 +109,9 @@ class AuthService {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('LoginStatus', LoginStatus);
   }
+  //todo make procedure saves user in shared preference
+  // void setUserInPrefs(Map) async{
+  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setString('email', email);
+  // }
 }
