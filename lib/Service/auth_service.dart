@@ -8,7 +8,7 @@ class AuthService {
   bool get isLoggedIn => _isLoggedIn;
 
   Future<bool> login(String email, String password) async {
-    const String url = 'http://10.70.20.214/User/auth';
+    const String url = 'http://localhost:5167/User/auth';
 
     try {
       final response = await http.post(
@@ -45,7 +45,7 @@ class AuthService {
   }
 
   Future<bool> signup(String UserName,String email, String password) async {
-    const String url = 'http://10.20.56.138/User';
+    const String url = 'http://localhost:5167/User/';
 
     try {
       final response = await http.post(

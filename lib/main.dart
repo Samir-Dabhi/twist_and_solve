@@ -7,6 +7,8 @@ import 'package:twist_and_solve/Pages/Progresspage.dart';
 import 'package:twist_and_solve/Pages/Signup.dart';
 import 'package:twist_and_solve/Pages/Splashscreen.dart';
 import 'package:twist_and_solve/Pages/TimeListPage.dart';
+import 'package:twist_and_solve/Pages/VideoListPage.dart';
+import 'package:twist_and_solve/Pages/VideoPlayerScreen.dart';
 import 'package:twist_and_solve/Service/auth_service.dart';
 
 void main() {
@@ -74,6 +76,28 @@ class MyApp extends StatelessWidget {
               path: '/progress',
               builder: (context, state) => const Progresspage(),
             ),
+            GoRoute(
+              path: '/videos/:lessonId',
+              builder: (context, state) {
+                final lessonId = int.parse(state.params['lessonId']!);
+                return VideoListPage(lessonId: lessonId);
+              },
+            ),
+            GoRoute(
+              path: '/videoPlayer',
+              builder: (context, state) {
+                final videoUrl = Uri.decodeComponent(state.queryParams['videoUrl']!);
+                final videoName = Uri.decodeComponent(state.queryParams['videoName']!);
+
+                return VideoPlayerScreen(
+                  videoUrl: videoUrl,
+                  videoName: videoName,
+                );
+              },
+            ),
+
+
+
           ],
         ),
       ],

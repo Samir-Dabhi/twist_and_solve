@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:twist_and_solve/Pages/Login.dart';
 import 'package:twist_and_solve/Service/lession_service.dart';
+import 'package:twist_and_solve/main.dart';
 
 class Lessionlistpage extends StatefulWidget {
   const Lessionlistpage({super.key});
@@ -32,19 +35,19 @@ class _LessionlistpageState extends State<Lessionlistpage> {
                 return Card(
                   margin: const EdgeInsets.all(8.0),
                   child: ListTile(
-                    leading: lesson.imageUrl.isNotEmpty
-                        ? Image.network(lesson.imageUrl, width: 50,
+                    leading: lesson.imageUrl!.isNotEmpty
+                        ? Image.network(lesson.imageUrl!, width: 50,
                         height: 50,
                         fit: BoxFit.cover)
                         : const Icon(Icons.image, size: 50),
-                    title: Text(lesson.title),
+                    title: Text(lesson.title!),
                     subtitle: Text(
                       'Step: ${lesson.stepOrder}\n${lesson.description}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     onTap: () {
-                      // Handle lesson tap (navigate to details or perform actions)
+                      context.go('/videos/${lesson.lessonId}');
                     },
                   ),
                 );

@@ -19,28 +19,28 @@ class LessonModel {
   // Factory constructor to create a LessonModel from JSON
   factory LessonModel.fromJson(Map<String, dynamic> json) {
     return LessonModel(
-      lessonId: json['lesson_id'],
+      lessonId: json['lessonId'],
       title: json['title'],
       description: json['description'],
-      stepOrder: json['step_order'],
-      imageUrl: json['image_url'],
+      stepOrder: json['stepOrder'],
+      imageUrl: json['imageUrl'],
     );
   }
 
   // Method to convert LessonModel to JSON (optional, if needed)
   Map<String, dynamic> toJson() {
     return {
-      'lesson_id': lessonId,
+      'lessonId': lessonId,
       'title': title,
       'description': description,
-      'step_order': stepOrder,
-      'image_url': imageUrl,
+      'stepOrder': stepOrder,
+      'imageUrl': imageUrl,
     };
   }
 }
 
 Future<List<LessonModel>> fetchLessons() async {
-  final response = await http.get(Uri.parse('http://10.70.20.214/Lesson'));
+  final response = await http.get(Uri.parse('http://localhost:5167/Lesson'));
 
   if (response.statusCode == 200) {
     final List<dynamic> data = json.decode(response.body);
