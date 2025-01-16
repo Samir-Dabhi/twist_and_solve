@@ -23,19 +23,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void initState() {
     super.initState();
 
-    // Print the video URL to debug
-    print('Initializing video with URL:${widget.videoUrl}\n\n\n\n\n\n\n');
-
     // Ensure the video URL is valid
     Uri videoUri = Uri.parse("https://www.w3schools.com/html/movie.mp4");
-    _controller = VideoPlayerController.networkUrl(videoUri)
+    _controller = VideoPlayerController.network(videoUri.toString())
       ..initialize().then((_) {
         setState(() {
           _isInitialized = true;
         });
         _controller.play(); // Auto-play the video
       }).catchError((error) {
-        print('Error initializing video: $error\n\n\n\n\n\n\n');
         setState(() {
           _isInitialized = false;
         });
@@ -54,13 +50,61 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       appBar: AppBar(
         title: Text(widget.videoName),
       ),
-      body: Center(
-        child: _isInitialized
-            ? AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(_controller),
-        )
-            : const CircularProgressIndicator(), // Show a loader while the video initializes
+      body: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: _isInitialized
+                  ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              )
+                  : const CircularProgressIndicator(), // Show a loader while the video initializes
+            ),
+          ),
+          if (_isInitialized)
+            Column(
+              children: [
+                // Video Progress Bar
+                VideoProgressIndicator(
+                  _controller,
+                  allowScrubbing: true,
+                  colors: VideoProgressColors(
+                    playedColor: Colors.blue,
+                    bufferedColor: Colors.grey,
+                    backgroundColor: Colors.black,
+                  ),
+                ),
+
+                // Custom Slider for Playback Control
+                Row(
+                  children: [
+                    // Current position
+                    Text(
+                      _formatDuration(_controller.value.position),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    Expanded(
+                      child: Slider(
+                        value: _controller.value.position.inSeconds.toDouble(),
+                        max: _controller.value.duration.inSeconds.toDouble(),
+                        onChanged: (value) {
+                          setState(() {
+                            _controller.seekTo(Duration(seconds: value.toInt()));
+                          });
+                        },
+                      ),
+                    ),
+                    // Total duration
+                    Text(
+                      _formatDuration(_controller.value.duration),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+        ],
       ),
       floatingActionButton: _isInitialized
           ? FloatingActionButton(
@@ -77,5 +121,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       )
           : null,
     );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$minutes:$seconds';
   }
 }
