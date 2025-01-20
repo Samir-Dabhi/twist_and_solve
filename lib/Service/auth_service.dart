@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:twist_and_solve/constants.dart';
 
 class AuthService {
   bool _isLoggedIn = false;
@@ -8,110 +10,97 @@ class AuthService {
   bool get isLoggedIn => _isLoggedIn;
 
   Future<bool> login(String email, String password) async {
-    const String url = 'http://localhost:5167/User/auth';
+    String url = '${Constants.baseUrl}/User/auth';
 
     try {
+
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(
-            {
-              "userId": 0,
-              "username": "string",
-              "email": email,
-              "passwordHash": password,
-              "dateJoined": "2024-12-29T09:46:47.648Z",
-              "profilePicture": "string",
-              "progressLevel": 0
-            }
-        ),
+        body: jsonEncode({
+          "userId": 0,
+          "username": "string",
+          "email": email,
+          "passwordHash": password,
+          "dateJoined": "2025-01-17T16:56:33.385Z",
+          "profilePicture": "string",
+          "progressLevel": 0
+        }),
       );
-      print(response.body);
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-          _isLoggedIn = true; // Mark the user as authenticated
-          setEmailInPrefs(email);
-          setPasswordInPrefs(password);
-          setLoginStatusInPrefs(_isLoggedIn);
-          return true; // Indicate success
+        _isLoggedIn = true;
+        await _storeUserInfo(responseData); // Save user info
+        return true;
       } else {
-        setLoginStatusInPrefs(_isLoggedIn);
-        throw Exception('Server error. Please try again later.');
+        throw Exception('Invalid credentials or server error.');
       }
     } catch (e) {
-      setLoginStatusInPrefs(_isLoggedIn);
       throw Exception('Error: $e');
     }
   }
 
-  Future<bool> signup(String UserName,String email, String password) async {
-    const String url = 'http://localhost:5167/User/';
+  Future<bool> signup(String username, String email, String password) async {
+    const String url = '${Constants.baseUrl}/User/';
 
     try {
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(
-            {
-              "userId": 0,
-              "username": UserName,
-              "email": email,
-              "passwordHash": password,
-              "dateJoined": DateTime.now().toString(),
-              "profilePicture": "string",
-              "progressLevel": 0
-            }
-        ),
+        body: jsonEncode({
+          "username": username,
+          "email": email,
+          "passwordHash": password,
+          "dateJoined": DateTime.now().toIso8601String(),
+          "profilePicture": "string",
+          "progressLevel": 0
+        }),
       );
-      print(response.statusCode);
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        _isLoggedIn = true; // Mark the user as authenticated
-        setEmailInPrefs(email);
-        setPasswordInPrefs(password);
-        setLoginStatusInPrefs(_isLoggedIn);
-        return true; // Indicate success
+        _isLoggedIn = true;
+        await _storeUserInfo(responseData); // Save user info
+        return true;
       } else {
-        setLoginStatusInPrefs(_isLoggedIn);
-        throw Exception('Server error. Please try again later.');
+        throw Exception('Signup failed. Please try again.');
       }
     } catch (e) {
-      setLoginStatusInPrefs(_isLoggedIn);
       throw Exception('Error: $e');
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
     _isLoggedIn = false;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all stored user data
   }
 
-  Future<String?> getEmailFromPrefs() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('email');
+  static Future<Map<String, dynamic>?> getUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userInfoJson = prefs.getString('userInfo');
+    if (userInfoJson != null) {
+      print(jsonDecode(userInfoJson!) as Map<String,dynamic>);
+      return jsonDecode(userInfoJson) as Map<String, dynamic>;
+    }
+    return null;
   }
-  Future<String?> getPasswordFromPrefs() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('password');
+
+  Future<void> _storeUserInfo(Map<String, dynamic> userInfo) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userInfo', jsonEncode(userInfo));
+    await prefs.setBool('isLoggedIn', _isLoggedIn);
   }
-  Future<bool?> getLoginStatusFromPrefs() async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('LoginStatus');
+
+  Future<bool> getLoginStatusFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isLoggedIn') ?? false;
   }
-  void setEmailInPrefs(String email) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('email', email);
+
+  static Future<int> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    dynamic userInfoJson = prefs.getString('userInfo');
+    dynamic userInfo = jsonDecode(userInfoJson!);
+    return userInfo['userId'];
   }
-  void setPasswordInPrefs(String password) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('password', password);
-  }
-  void setLoginStatusInPrefs(bool LoginStatus) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('LoginStatus', LoginStatus);
-  }
-  //todo make procedure saves user in shared preference
-  // void setUserInPrefs(Map) async{
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   prefs.setString('email', email);
-  // }
+
 }

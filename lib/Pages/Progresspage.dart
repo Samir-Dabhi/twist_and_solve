@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:twist_and_solve/Components/ProgressGraph.dart';
 
-class Progresspage extends StatelessWidget {
-  const Progresspage({super.key});
+class ProgressPage extends StatelessWidget {
+  const ProgressPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return const Scaffold(
+      body: ProgressGraph(),
+    );
   }
 }

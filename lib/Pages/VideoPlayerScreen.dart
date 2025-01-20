@@ -18,14 +18,18 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  Duration _currentPosition = Duration.zero; // To track current playback position
 
   @override
   void initState() {
     super.initState();
 
     // Ensure the video URL is valid
+
+    // todo: make url dynamic
     Uri videoUri = Uri.parse("https://www.w3schools.com/html/movie.mp4");
     _controller = VideoPlayerController.network(videoUri.toString())
+      ..addListener(_updatePosition) // Add listener for position updates
       ..initialize().then((_) {
         setState(() {
           _isInitialized = true;
@@ -40,8 +44,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   @override
   void dispose() {
+    _controller.removeListener(_updatePosition); // Remove the listener
     _controller.dispose(); // Clean up the controller
     super.dispose();
+  }
+
+  // Update the current playback position
+  void _updatePosition() {
+    setState(() {
+      _currentPosition = _controller.value.position;
+    });
   }
 
   @override
@@ -65,28 +77,17 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           if (_isInitialized)
             Column(
               children: [
-                // Video Progress Bar
-                VideoProgressIndicator(
-                  _controller,
-                  allowScrubbing: true,
-                  colors: VideoProgressColors(
-                    playedColor: Colors.blue,
-                    bufferedColor: Colors.grey,
-                    backgroundColor: Colors.black,
-                  ),
-                ),
-
                 // Custom Slider for Playback Control
                 Row(
                   children: [
                     // Current position
                     Text(
-                      _formatDuration(_controller.value.position),
+                      _formatDuration(_currentPosition),
                       style: const TextStyle(fontSize: 12),
                     ),
                     Expanded(
                       child: Slider(
-                        value: _controller.value.position.inSeconds.toDouble(),
+                        value: _currentPosition.inSeconds.toDouble(),
                         max: _controller.value.duration.inSeconds.toDouble(),
                         onChanged: (value) {
                           setState(() {

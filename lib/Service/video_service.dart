@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:twist_and_solve/constants.dart';
 
 class VideoService {
-  static const String baseUrl = "http://localhost:5167/Video/ByLessonId";
+  static const String baseUrl = Constants.baseUrl;
 
   Future<List<VideoModel>> fetchVideosByLessonId(int lessonId) async {
-    final url = Uri.parse('$baseUrl/$lessonId'); // Replace with actual endpoint
+    final url = Uri.parse('$baseUrl/Video/ByLessonId/$lessonId'); // Replace with actual endpoint
 
     //print
     print(url.toString());

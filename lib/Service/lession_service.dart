@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:twist_and_solve/constants.dart';
 class LessonModel {
   final int? lessonId;
   final String? title;
@@ -40,7 +41,7 @@ class LessonModel {
 }
 
 Future<List<LessonModel>> fetchLessons() async {
-  final response = await http.get(Uri.parse('http://localhost:5167/Lesson'));
+  final response = await http.get(Uri.parse('${Constants.baseUrl}/Lesson'));
 
   if (response.statusCode == 200) {
     final List<dynamic> data = json.decode(response.body);
