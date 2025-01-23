@@ -53,8 +53,6 @@ Future<List<SolveModel>> fetchSolvesByUserId() async {
   final response = await http.get(Uri.parse('$baseUrl/Solve/user/$userId'));
   if (response.statusCode == 200) {
     final List<dynamic> jsonData = json.decode(response.body);
-    print('fetchsolve');
-    print(jsonData);
     return jsonData.map((json) => SolveModel.fromJson(json)).toList();
   } else {
     throw Exception('Failed to load solve data from api');

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../Service/solve_service.dart';
+
 class TimeList extends StatefulWidget {
 
   @override
@@ -8,9 +10,12 @@ class TimeList extends StatefulWidget {
 }
 
 class _TimeListState extends State<TimeList> {
-  Future<List<String>?> getPreferences() async{
+  Future<List<SolveModel>?> getPreferences() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList('TimeList');
+    var data = await fetchSolvesByUserId();
+    print(data[0].solveTime);
+    print("this is data");
+    return data;
   }
   void removeTimeFromPreference(int index) async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -20,7 +25,6 @@ class _TimeListState extends State<TimeList> {
     }
     list = prefs.getStringList('TimeList');
     list?.removeAt(index);
-    print(list?.remove(index));
     prefs.setStringList('TimeList', list!);
   }
   @override
@@ -30,7 +34,7 @@ class _TimeListState extends State<TimeList> {
       child: Scaffold(
         body: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: FutureBuilder<List<String>?>(
+          child: FutureBuilder<List<SolveModel>?>(
             future: getPreferences(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -59,7 +63,7 @@ class _TimeListState extends State<TimeList> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           // Record text
-                          Text(timeList[index]),
+                          Text(timeList[index].solveTime.toString()),
                           // Delete Button
                           IconButton(
                             onPressed: () {

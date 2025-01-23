@@ -20,21 +20,19 @@ class _TimerComponentState extends State<TimerComponent> {
   void initState() {
     super.initState();
     _stopwatch = Stopwatch();
-    // Update the timer UI every 30ms
     _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       if (mounted) {
-        setState(() {}); // Ensure the widget is mounted before updating
+        setState(() {}); // Update UI every 30ms
       }
     });
   }
 
   @override
   void dispose() {
-    _timer.cancel(); // Cancel the periodic timer to avoid memory leaks
+    _timer.cancel(); // Cancel the periodic timer
     super.dispose();
   }
 
-  /// Toggles between start and stop of the stopwatch
   void _toggleStartStop() {
     if (_stopwatch.isRunning) {
       _isStoppedOnce = true;
@@ -44,13 +42,11 @@ class _TimerComponentState extends State<TimerComponent> {
     }
   }
 
-  /// Resets the timer and its state
   void _resetTimer() {
     _isStoppedOnce = false;
     _stopwatch.reset();
   }
 
-  /// Saves the solve time to shared preferences
   Future<void> _saveSolveTimeToPrefs(String time) async {
     final prefs = await SharedPreferences.getInstance();
     final timeList = prefs.getStringList('TimeList') ?? [];
@@ -59,7 +55,6 @@ class _TimerComponentState extends State<TimerComponent> {
     debugPrint('Saved time locally: $time');
   }
 
-  /// Saves the solve time to the database
   Future<void> _saveSolveTimeToDatabase() async {
     const String apiUrl = 'http://localhost:5167/Solve'; // Replace with your API endpoint
     try {
@@ -87,7 +82,6 @@ class _TimerComponentState extends State<TimerComponent> {
           "scramble": "F R U R U F U R U R U R U2 R"
         }),
       );
-      print(response);
       if (response.statusCode == 201) {
         debugPrint('Solve time saved to database successfully.');
       } else {
@@ -98,20 +92,24 @@ class _TimerComponentState extends State<TimerComponent> {
     }
   }
 
-  /// Returns the formatted timer text
   String _getFormattedTime() {
     final milliseconds = _stopwatch.elapsed.inMilliseconds;
-
     final milli = (milliseconds % 100).toString().padLeft(2, "0");
     final seconds = ((milliseconds ~/ 1000) % 60).toString().padLeft(2, "0");
     final minutes = ((milliseconds ~/ 1000) ~/ 60).toString().padLeft(2, "0");
-
     return int.parse(minutes) > 0 ? "$minutes:$seconds:$milli" : "$seconds:$milli";
   }
 
   @override
   Widget build(BuildContext context) {
+    // Access theme colors
+    final theme = Theme.of(context);
+    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;
+    final backgroundColor = theme.scaffoldBackgroundColor;
+    final iconColor = theme.iconTheme.color ?? Colors.black;
+
     return Scaffold(
+      backgroundColor: backgroundColor, // Set background based on theme
       body: InkWell(
         onTap: _toggleStartStop,
         child: Column(
@@ -123,8 +121,8 @@ class _TimerComponentState extends State<TimerComponent> {
               alignment: Alignment.center,
               child: Text(
                 _getFormattedTime(),
-                style: const TextStyle(
-                  color: Colors.black,
+                style: TextStyle(
+                  color: textColor, // Dynamic text color
                   fontSize: 70,
                   fontWeight: FontWeight.bold,
                 ),
@@ -136,7 +134,7 @@ class _TimerComponentState extends State<TimerComponent> {
               children: [
                 IconButton(
                   onPressed: _resetTimer,
-                  icon: const Icon(Icons.close, color: Colors.red),
+                  icon: Icon(Icons.close, color: Colors.red),
                   tooltip: 'Reset Timer',
                 ),
                 IconButton(
@@ -145,12 +143,12 @@ class _TimerComponentState extends State<TimerComponent> {
                     await _saveSolveTimeToPrefs(formattedTime); // Save locally
                     await _saveSolveTimeToDatabase(); // Save to database
                   },
-                  icon: const Icon(Icons.done, color: Colors.green),
+                  icon: Icon(Icons.done, color: Colors.green),
                   tooltip: 'Save Solve',
                 ),
                 IconButton(
                   onPressed: _resetTimer,
-                  icon: const Icon(Icons.restore, color: Colors.blue),
+                  icon: Icon(Icons.restore, color: iconColor),
                   tooltip: 'Restart Timer',
                 ),
               ],

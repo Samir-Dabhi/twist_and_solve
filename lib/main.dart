@@ -119,9 +119,16 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Twist and Solve',
       routerConfig: router,
-      theme: ThemeData.light().copyWith(
-        primaryColor: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
+      theme: ThemeData.from(
+        colorScheme: const ColorScheme.light(
+          primary: Colors.blue,
+          onPrimary: Colors.white,
+          background: Colors.white,
+          onBackground: Colors.black,
+          surface: Colors.white,
+          onSurface: Colors.black,
+        ),
+      ).copyWith(
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.blue,
           iconTheme: IconThemeData(color: Colors.white),
@@ -131,10 +138,21 @@ class _MyAppState extends State<MyApp> {
           selectedItemColor: Colors.blue,
           unselectedItemColor: Colors.grey,
         ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Colors.black),
+          bodyMedium: TextStyle(color: Colors.black87),
+        ),
       ),
-      darkTheme: ThemeData.dark().copyWith(
-        primaryColor: Colors.black,
-        scaffoldBackgroundColor: Colors.black,
+      darkTheme: ThemeData.from(
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.black,
+          onPrimary: Colors.white,
+          background: Colors.black,
+          onBackground: Colors.white,
+          surface: Colors.black,
+          onSurface: Colors.white,
+        ),
+      ).copyWith(
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
           iconTheme: IconThemeData(color: Colors.white),
@@ -151,6 +169,7 @@ class _MyAppState extends State<MyApp> {
       ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
     );
+
   }
 }
 
@@ -262,6 +281,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   title: const Text('Home'),
                   onTap: () {
                     context.go('/home');
+                    Scaffold.of(context).closeDrawer();
                   },
                 ),
                 ListTile(
@@ -276,6 +296,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   title: const Text('Lessons'),
                   onTap: () {
                     context.go('/lessonlist');
+                    Scaffold.of(context).closeDrawer();
                   },
                 ),
                 ListTile(
@@ -283,6 +304,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   title: const Text('Progress'),
                   onTap: () {
                     context.go('/progress');
+                    Scaffold.of(context).closeDrawer();
                   },
                 ),
                 const Divider(),
@@ -297,44 +319,60 @@ class _MainScaffoldState extends State<MainScaffold> {
         ),
       ),
       body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        showSelectedLabels: false,
-        currentIndex: _getCurrentIndex(context),
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              context.go('/home');
-              break;
-            case 1:
-              context.go('/timelist');
-              break;
-            case 2:
-              context.go('/lessonlist');
-              break;
-            case 3:
-              context.go('/progress');
-              break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.timer, color: Colors.black),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list, color: Colors.black),
-            label: 'Times',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.video_collection_rounded, color: Colors.black),
-            label: 'Lessons',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart, color: Colors.black),
-            label: 'Progress',
-          ),
-        ],
-      ),
+        bottomNavigationBar: BottomNavigationBar(
+          showSelectedLabels: false,
+          currentIndex: _getCurrentIndex(context),
+          onTap: (index) {
+            switch (index) {
+              case 0:
+                context.go('/home');
+                break;
+              case 1:
+                context.go('/timelist');
+                break;
+              case 2:
+                context.go('/lessonlist');
+                break;
+              case 3:
+                context.go('/progress');
+                break;
+            }
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.timer,
+                color: Theme.of(context).iconTheme.color,
+              ),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.list,
+                color: Theme.of(context).iconTheme.color,
+              ),
+              label: 'Times',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.video_collection_rounded,
+                color: Theme.of(context).iconTheme.color,
+              ),
+              label: 'Lessons',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.show_chart,
+                color: Theme.of(context).iconTheme.color,
+              ),
+              label: 'Progress',
+            ),
+          ],
+          backgroundColor: Colors.blue, // Dynamic background
+          selectedItemColor: Theme.of(context).primaryColor, // Highlight selected item
+          unselectedItemColor: Theme.of(context).unselectedWidgetColor, // Unselected color
+        ),
+
     );
   }
 
@@ -347,6 +385,4 @@ class _MainScaffoldState extends State<MainScaffold> {
     return 0; // Default to home if no match
   }
 }
-
-
-
+//TODO: Achivement page , Lessons Progress page implement
