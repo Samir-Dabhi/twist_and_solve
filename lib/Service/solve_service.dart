@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:twist_and_solve/Service/auth_service.dart';
 import 'package:twist_and_solve/constants.dart';
 
 
@@ -47,8 +46,6 @@ Future<List<SolveModel>> fetchSolvesByUserId() async {
   final prefs = await SharedPreferences.getInstance();
   dynamic userInfoJson = prefs.getString('userInfo');
   dynamic userInfo = jsonDecode(userInfoJson!);
-  print('userinfo');
-  print(userInfo);
   int userId = userInfo['userId'];
   final response = await http.get(Uri.parse('$baseUrl/Solve/user/$userId'));
   if (response.statusCode == 200) {
@@ -56,5 +53,13 @@ Future<List<SolveModel>> fetchSolvesByUserId() async {
     return jsonData.map((json) => SolveModel.fromJson(json)).toList();
   } else {
     throw Exception('Failed to load solve data from api');
+  }
+}
+Future<void> removeSolveFromApi(int solveID) async {
+  final response = await http.delete(Uri.parse('$baseUrl/Solve/$solveID'));
+  if (response.statusCode == 200) {
+
+  } else {
+    throw Exception('Failed to delete solve data!');
   }
 }

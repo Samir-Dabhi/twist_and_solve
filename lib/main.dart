@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/Components/SettingPanel.dart';
-import 'package:twist_and_solve/Pages/HomePage.dart';
-import 'package:twist_and_solve/Pages/LessionListPage.dart';
-import 'package:twist_and_solve/Pages/Login.dart';
-import 'package:twist_and_solve/Pages/Progresspage.dart';
-import 'package:twist_and_solve/Pages/Signup.dart';
-import 'package:twist_and_solve/Pages/Splashscreen.dart';
-import 'package:twist_and_solve/Pages/TimeListPage.dart';
-import 'package:twist_and_solve/Pages/VideoListPage.dart';
-import 'package:twist_and_solve/Pages/VideoPlayerScreen.dart';
+import 'package:twist_and_solve/Pages/home_page.dart';
+import 'package:twist_and_solve/Pages/lession_list_page.dart';
+import 'package:twist_and_solve/Pages/login.dart';
+import 'package:twist_and_solve/Pages/progress_page.dart';
+import 'package:twist_and_solve/Pages/signup.dart';
+import 'package:twist_and_solve/Pages/splashscreen.dart';
+import 'package:twist_and_solve/Pages/time_list_page.dart';
+import 'package:twist_and_solve/Pages/video_list_page.dart';
+import 'package:twist_and_solve/Pages/video_player_screen.dart';
+import 'package:twist_and_solve/Pages/achivement_page.dart';
+import 'package:twist_and_solve/Pages/algorithm_page.dart';
 import 'package:twist_and_solve/Service/auth_service.dart';
 
 
@@ -110,6 +112,18 @@ class _MyAppState extends State<MyApp> {
                 return const ProgressPage();
               },
             ),
+            GoRoute(
+              path: '/achievement',
+              builder: (context, state) {
+                return const AchivementPage();
+              },
+            ),
+            GoRoute(
+              path: '/algorithm',
+              builder: (context, state) {
+                return const AlgorithmPage();
+              },
+            ),
           ],
         ),
       ],
@@ -123,8 +137,6 @@ class _MyAppState extends State<MyApp> {
         colorScheme: const ColorScheme.light(
           primary: Colors.blue,
           onPrimary: Colors.white,
-          background: Colors.white,
-          onBackground: Colors.black,
           surface: Colors.white,
           onSurface: Colors.black,
         ),
@@ -147,8 +159,6 @@ class _MyAppState extends State<MyApp> {
         colorScheme: const ColorScheme.dark(
           primary: Colors.black,
           onPrimary: Colors.white,
-          background: Colors.black,
-          onBackground: Colors.white,
           surface: Colors.black,
           onSurface: Colors.white,
         ),
@@ -307,6 +317,22 @@ class _MainScaffoldState extends State<MainScaffold> {
                     Scaffold.of(context).closeDrawer();
                   },
                 ),
+                ListTile(
+                  leading: const Icon(Icons.emoji_events),
+                  title: const Text('Achievement'),
+                  onTap: () {
+                    context.go('/achievement');
+                    Scaffold.of(context).closeDrawer();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.emoji_events),
+                  title: const Text('Algorithm'),
+                  onTap: () {
+                    context.go('/algorithm');
+                    Scaffold.of(context).closeDrawer();
+                  },
+                ),
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.logout),
@@ -382,6 +408,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     if (location.startsWith('/timelist')) return 1;
     if (location.startsWith('/lessonlist')) return 2;
     if (location.startsWith('/progress')) return 3;
+    if (location.startsWith('/achievement')) return 3;
     return 0; // Default to home if no match
   }
 }

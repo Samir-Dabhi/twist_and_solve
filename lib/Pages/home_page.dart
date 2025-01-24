@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:twist_and_solve/Components/Timer.dart';
-import 'package:twist_and_solve/Pages/LessionListPage.dart';
-import 'package:twist_and_solve/Pages/TimeListPage.dart';
+import 'package:twist_and_solve/Pages/lession_list_page.dart';
+import 'package:twist_and_solve/Pages/time_list_page.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});

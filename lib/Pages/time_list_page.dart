@@ -13,8 +13,6 @@ class _TimeListState extends State<TimeList> {
   Future<List<SolveModel>?> getPreferences() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var data = await fetchSolvesByUserId();
-    print(data[0].solveTime);
-    print("this is data");
     return data;
   }
   void removeTimeFromPreference(int index) async{
@@ -27,6 +25,7 @@ class _TimeListState extends State<TimeList> {
     list?.removeAt(index);
     prefs.setStringList('TimeList', list!);
   }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -68,7 +67,9 @@ class _TimeListState extends State<TimeList> {
                           IconButton(
                             onPressed: () {
                               // timeList.removeAt(index); // This modification is local
-                              removeTimeFromPreference(index);
+                              // removeTimeFromPreference(index);
+                              //TODO: show confomation popup eg are you sure you want to delete record
+                              removeSolveFromApi(timeList[index].solveId);
                               setState(() {});
                             },
                             icon: const Icon(Icons.delete_outline_rounded),

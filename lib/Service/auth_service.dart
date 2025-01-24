@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/constants.dart';
@@ -79,7 +78,6 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     final userInfoJson = prefs.getString('userInfo');
     if (userInfoJson != null) {
-      print(jsonDecode(userInfoJson!) as Map<String,dynamic>);
       return jsonDecode(userInfoJson) as Map<String, dynamic>;
     }
     return null;
