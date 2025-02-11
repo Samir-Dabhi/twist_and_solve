@@ -1,11 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:twist_and_solve/Components/SettingPanel.dart';
+import 'package:twist_and_solve/Components/setting_component.dart';
 import 'package:twist_and_solve/Pages/home_page.dart';
 import 'package:twist_and_solve/Pages/lession_list_page.dart';
 import 'package:twist_and_solve/Pages/login.dart';
 import 'package:twist_and_solve/Pages/progress_page.dart';
+import 'package:twist_and_solve/Pages/reference_page.dart';
 import 'package:twist_and_solve/Pages/signup.dart';
 import 'package:twist_and_solve/Pages/splashscreen.dart';
 import 'package:twist_and_solve/Pages/time_list_page.dart';
@@ -115,13 +117,19 @@ class _MyAppState extends State<MyApp> {
             GoRoute(
               path: '/achievement',
               builder: (context, state) {
-                return const AchivementPage();
+                return const AchievementPage();
               },
             ),
             GoRoute(
               path: '/algorithm',
               builder: (context, state) {
                 return const AlgorithmPage();
+              },
+            ),
+            GoRoute(
+              path: '/rubik',
+              builder: (context, state) {
+                return const RubikCubePage();
               },
             ),
           ],
@@ -272,18 +280,21 @@ class _MainScaffoldState extends State<MainScaffold> {
             final userInfo = snapshot.data!;
             final userName = userInfo['username'] ?? 'Unknown User';
             final email = userInfo['email'] ?? 'Unknown Email';
-            // final profilePicture = userInfo['profilePicture'] ?? 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3lUQuZFpHuUdWxWi42QcoXzzWyi86wxiblYw3v682ce-2ioFrwXZaMPBNRovR6RY_iWM&usqp=CAU';
+            final profilePicture = userInfo['profilePicture'] ?? 'https://res.cloudinary.com/dfsrzlxbv/image/upload/v1737723374/twist_and_solve/profile_pictures/ProfileAvtar_pl4qbr.webp';
             return ListView(
               padding: EdgeInsets.zero,
               children: [
                 UserAccountsDrawerHeader(
                   accountName: Text(userName),
                   accountEmail: Text(email),
-                  currentAccountPicture: const CircleAvatar(
-                    child: Icon(Icons.account_circle, size: 50),
-                    /// TDOD fetch image from image.network
-
-                    // child: Image.network(profilePicture),
+                  currentAccountPicture: CircleAvatar(
+                    backgroundColor: Colors.transparent, // Optional: For a transparent background
+                    child: ClipOval(
+                      child: Image.network(
+                        profilePicture,
+                        fit: BoxFit.cover, // Ensures the image covers the circle
+                      ),
+                    ),
                   ),
                 ),
                 ListTile(
@@ -326,7 +337,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.emoji_events),
+                  leading: const Icon(Icons.functions),
                   title: const Text('Algorithm'),
                   onTap: () {
                     context.go('/algorithm');
@@ -338,6 +349,15 @@ class _MainScaffoldState extends State<MainScaffold> {
                   leading: const Icon(Icons.logout),
                   title: const Text('Logout'),
                   onTap: _logout, // Call the logout method
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(CupertinoIcons.cube),
+                  title: const Text('3d Model of Rubiks Cube'),
+                  onTap: () {
+                    context.go('/rubik');
+                    Scaffold.of(context).closeDrawer();
+                  }, // Call the logout method
                 ),
               ],
             );
