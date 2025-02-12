@@ -43,6 +43,7 @@ dependencies:
   flutter_3d_controller: ^2.1.0
   url_launcher: ^6.1.10
   gif: ^2.3.0
+  confetti: ^0.7.0
 
 dev_dependencies:
   flutter_test:

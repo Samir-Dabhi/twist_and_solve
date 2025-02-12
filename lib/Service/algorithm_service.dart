@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:twist_and_solve/constants.dart';
 
 class Algorithm {
   final int algorithmId;
@@ -28,7 +29,10 @@ class Algorithm {
 }
 
 Future<List<Algorithm>> fetchAlgorithms() async {
-  final response = await http.get(Uri.parse('http://localhost:5167/Algorithm'));
+
+  final String url = '${Constants.baseUrl}/Algorithm';
+
+  final response = await http.get(Uri.parse(url));
 
   if (response.statusCode == 200) {
     List jsonResponse = json.decode(response.body);

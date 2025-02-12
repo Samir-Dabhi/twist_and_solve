@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:twist_and_solve/constants.dart';
 
 class Achievements {
   final int achievementId;
@@ -29,9 +32,25 @@ Future<List<Achievements>> fetchAchievements() async {
 
   if (response.statusCode == 200) {
     List<dynamic> data = json.decode(response.body);
-    print(data);
+    debugPrint(data.toString());
     return data.map((json) => Achievements.fromJson(json)).toList();
   } else {
     throw Exception('Failed to load achievements');
+  }
+}
+Future<Achievements> fetchAchievementById(int achievementId) async {
+  final String url = '${Constants.baseUrl}/Achievement/$achievementId';
+
+  try {
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return Achievements.fromJson(data);
+    } else {
+      throw Exception('Failed to load achievement with ID: $achievementId');
+    }
+  } catch (e) {
+    throw Exception('Error fetching achievement: $e');
   }
 }

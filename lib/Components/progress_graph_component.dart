@@ -110,21 +110,10 @@ class _ProgressGraphState extends State<ProgressGraph> {
                                         Colors.purple,
                                       ],
                                     ),
-                                    barWidth: 2,
+                                    barWidth: 5,
                                     isCurved: true,
                                     preventCurveOverShooting: true,
                                     isStrokeCapRound: true,
-                                    belowBarData: BarAreaData(
-                                      show: true,
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Colors.blueAccent,
-                                          Colors.purpleAccent,
-                                        ],
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                      ),
-                                    ),
                                   ),
                                 ],
                                 titlesData: FlTitlesData(
