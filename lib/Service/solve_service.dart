@@ -63,3 +63,58 @@ Future<void> removeSolveFromApi(int solveID) async {
     throw Exception('Failed to delete solve data!');
   }
 }
+class Stats{
+  late SolveModel bestsolve;
+  late double avrage;
+  late double avrageof5;
+  late double avrageof12;
+  late SolveModel lastSolve;
+}
+Future<Stats> getSolveStats() async {
+  List<SolveModel> list = await fetchSolvesByUserId();
+  Stats stats = new Stats();
+  double bestTime = list[0].solveTime;
+  int bestIndex = 0;
+  double sumOftime = 0;
+  for(int i=0;i<list.length;i++){
+    sumOftime+=list[i].solveTime;
+    if(list[i].solveTime<bestTime){
+      bestTime=list[i].solveTime;
+      bestIndex=i;
+    }
+  }
+  stats.bestsolve = list[bestIndex];
+  stats.avrage = sumOftime/list.length;
+  stats.lastSolve = list[list.length-1];
+
+  if(list.length>5){
+    sumOftime = 0;
+    for(int i=list.length-1;i>list.length-5;i--){
+      sumOftime+=list[i].solveTime;
+      if(list[i].solveTime<bestTime){
+        bestTime=list[i].solveTime;
+        bestIndex=i;
+      }
+    }
+    stats.avrageof5 = sumOftime/5;
+  }
+  else{
+    stats.avrageof5=0;
+  }
+  if(list.length>12){
+    sumOftime = 0;
+    for(int i=list.length-1;i>list.length-12;i--){
+      sumOftime+=list[i].solveTime;
+      if(list[i].solveTime<bestTime){
+        bestTime=list[i].solveTime;
+        bestIndex=i;
+      }
+    }
+    stats.avrageof12= sumOftime/12;
+  }
+  else{
+    stats.avrageof12=0;
+  }
+  stats.avrageof12 ??= 0;
+  return stats;
+}
