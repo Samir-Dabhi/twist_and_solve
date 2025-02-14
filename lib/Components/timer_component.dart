@@ -140,7 +140,6 @@ class _TimerComponentState extends State<TimerComponent> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.black;

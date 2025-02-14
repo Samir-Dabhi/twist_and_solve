@@ -21,7 +21,9 @@ class _TimeListState extends State<TimeList> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Cancel"),
+            child: const Text("Cancel",style: TextStyle(
+              color: Colors.black26
+            ),),
           ),
           TextButton(
             onPressed: () {

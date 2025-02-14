@@ -15,6 +15,15 @@ class _HomepageState extends State<Homepage> {
     return SafeArea(
       bottom: true,
       child: Scaffold(
+        appBar: AppBar(
+          title: const Row(
+            children: [
+              Text("Stop Watch"),
+              SizedBox(width: 10,),
+              Icon(Icons.timer)
+            ],
+          ),
+        ),
         body: const TimerComponent(),
       ),
     );

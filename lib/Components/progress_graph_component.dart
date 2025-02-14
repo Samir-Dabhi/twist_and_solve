@@ -38,7 +38,6 @@ class _ProgressGraphState extends State<ProgressGraph> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Progress Graph'),
-        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

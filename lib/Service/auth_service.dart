@@ -17,13 +17,8 @@ class AuthService {
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "userId": 0,
-          "username": "string",
           "email": email,
           "passwordHash": password,
-          "dateJoined": "2025-01-17T16:56:33.385Z",
-          "profilePicture": "string",
-          "progressLevel": 0
         }),
       );
       if (response.statusCode == 200) {

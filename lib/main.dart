@@ -31,7 +31,14 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool _isDarkMode = false; // Track dark mode state
-
+  Color primaryColor = const Color(0xFFCBF1F5);
+  Color backgroundColor = const Color(0xFFF9F7F7);
+  Color highlightColor = const Color(0xFFA6E3E9);
+  Color darkHighLightColor = const Color(0xFF112D4E);
+  Color darkPrimaryColor = const Color(0xFF393E46);
+  Color darkBackgroundColor = const Color(0xFF222831);
+  Color darkHighlightColor = const Color(0xFF00ADB5);
+  Color darkDarkHighLightColor = const Color(0xFFEEEEEE);
   @override
   Widget build(BuildContext context) {
     final AuthService authService = AuthService();
@@ -62,7 +69,7 @@ class _MyAppState extends State<MyApp> {
         ),
         GoRoute(
           path: '/splash',
-          builder: (context, state) => SplashScreen(),
+          builder: (context, state) => const SplashScreen(),
         ),
         ShellRoute(
           builder: (context, state, child) {
@@ -142,48 +149,81 @@ class _MyAppState extends State<MyApp> {
       title: 'Twist and Solve',
       routerConfig: router,
       theme: ThemeData.from(
-        colorScheme: const ColorScheme.light(
-          primary: Colors.blue,
-          onPrimary: Colors.white,
-          surface: Colors.white,
-          onSurface: Colors.black,
+        colorScheme: ColorScheme.light(
+          primary: primaryColor,
+          onPrimary: darkHighLightColor,
+          surface: backgroundColor,
+          onSurface: darkHighLightColor,
         ),
       ).copyWith(
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blue,
-          iconTheme: IconThemeData(color: Colors.white),
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 18),
+        appBarTheme: AppBarTheme(
+          backgroundColor: primaryColor,
+          iconTheme: IconThemeData(color: darkHighLightColor),
+          titleTextStyle: TextStyle(color: darkHighLightColor, fontSize: 18),
         ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: Colors.blue,
-          unselectedItemColor: Colors.grey,
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          backgroundColor: primaryColor,
+          selectedIconTheme: IconThemeData(
+            color: darkHighLightColor
+          ),
+          unselectedIconTheme: IconThemeData(
+            color: darkHighLightColor
+          ),
+          selectedItemColor: darkHighLightColor,
+          unselectedItemColor: darkHighLightColor,
         ),
         textTheme: const TextTheme(
+          titleLarge: TextStyle(color: Colors.black),
           bodyLarge: TextStyle(color: Colors.black),
           bodyMedium: TextStyle(color: Colors.black87),
         ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: highlightColor,
+          )
+      )
       ),
       darkTheme: ThemeData.from(
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.black,
-          onPrimary: Colors.white,
-          surface: Colors.black,
-          onSurface: Colors.white,
+        colorScheme: ColorScheme.dark(
+          primary: darkPrimaryColor,
+          onPrimary: darkHighlightColor,
+          surface: darkBackgroundColor,
+          onSurface: darkDarkHighLightColor,
         ),
       ).copyWith(
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
-          iconTheme: IconThemeData(color: Colors.white),
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 18),
+        appBarTheme: AppBarTheme(
+          backgroundColor: darkPrimaryColor,
+          iconTheme: IconThemeData(color: darkDarkHighLightColor),
+          titleTextStyle: TextStyle(color: darkDarkHighLightColor, fontSize: 18),
         ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey,
+        bottomNavigationBarTheme:BottomNavigationBarThemeData(
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          backgroundColor: darkBackgroundColor,
+          selectedIconTheme: IconThemeData(
+              color: darkHighlightColor
+          ),
+          unselectedIconTheme: IconThemeData(
+              color: darkDarkHighLightColor
+          ),
+          selectedItemColor: darkHighlightColor,
+          unselectedItemColor: darkDarkHighLightColor,
         ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white70),
+        textTheme: TextTheme(
+          titleLarge: TextStyle(color: darkDarkHighLightColor),
+          bodyLarge: TextStyle(color: darkDarkHighLightColor),
+          bodyMedium: TextStyle(color: darkDarkHighLightColor),
         ),
+        cardTheme: CardTheme(
+          color: darkPrimaryColor,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: darkHighlightColor
+          )
+        )
       ),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
     );
@@ -353,7 +393,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                 const Divider(),
                 ListTile(
                   leading: const Icon(CupertinoIcons.cube),
-                  title: const Text('3d Model of Rubiks Cube'),
+                  title: const Text('3d Model of Rubik\'s Cube'),
                   onTap: () {
                     context.go('/rubik');
                     Scaffold.of(context).closeDrawer();
@@ -366,7 +406,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       ),
       body: widget.child,
         bottomNavigationBar: BottomNavigationBar(
-          showSelectedLabels: false,
+          type: BottomNavigationBarType.fixed, // Ensures the background color applies correctly
           currentIndex: _getCurrentIndex(context),
           onTap: (index) {
             switch (index) {
@@ -382,42 +422,35 @@ class _MainScaffoldState extends State<MainScaffold> {
               case 3:
                 context.go('/progress');
                 break;
+              case 4:
+                context.go('/achievement');
+                break;
             }
           },
-          items: [
+          items: const [
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.timer,
-                color: Theme.of(context).iconTheme.color,
-              ),
+              icon: Icon(Icons.timer),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.list,
-                color: Theme.of(context).iconTheme.color,
-              ),
+              icon: Icon(Icons.list),
               label: 'Times',
             ),
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.video_collection_rounded,
-                color: Theme.of(context).iconTheme.color,
-              ),
+              icon: Icon(Icons.video_collection_rounded),
               label: 'Lessons',
             ),
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.show_chart,
-                color: Theme.of(context).iconTheme.color,
-              ),
+              icon: Icon(Icons.show_chart),
               label: 'Progress',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.emoji_events),
+              label: 'Achievement',
+            ),
           ],
-          backgroundColor: Colors.blue, // Dynamic background
-          selectedItemColor: Theme.of(context).primaryColor, // Highlight selected item
-          unselectedItemColor: Theme.of(context).unselectedWidgetColor, // Unselected color
         ),
+
 
     );
   }
@@ -428,10 +461,17 @@ class _MainScaffoldState extends State<MainScaffold> {
     if (location.startsWith('/timelist')) return 1;
     if (location.startsWith('/lessonlist')) return 2;
     if (location.startsWith('/progress')) return 3;
-    if (location.startsWith('/achievement')) return 3;
+    if (location.startsWith('/achievement')) return 4;
     return 0; // Default to home if no match
   }
 }
 //TODO: UI Changes,dark mode TimeList page ,video page,progress Graph
 //TODO: 3D Cube with algo if it can be done
-//TODO
+//TODO: Navigation
+//TODO: Forget Passowrd implementation
+/*
+
+#f7e6ca,#d4c5ae,#82796b,#594423
+
+
+* */
