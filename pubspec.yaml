@@ -44,6 +44,7 @@ dependencies:
   url_launcher: ^6.1.10
   gif: ^2.3.0
   confetti: ^0.7.0
+  fluttertoast: ^8.2.12
 
 dev_dependencies:
   flutter_test:

@@ -73,7 +73,7 @@ class _TimeListState extends State<TimeList> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     child: ListTile(
                       title: Text(
-                        timeList[index].solveTime.toString(),
+                        ((timeList[index].solveTime.toString()+'00').substring(0,5)),
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),

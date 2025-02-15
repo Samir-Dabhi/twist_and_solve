@@ -95,5 +95,4 @@ class AuthService {
     dynamic userInfo = jsonDecode(userInfoJson!);
     return userInfo['userId'];
   }
-
 }

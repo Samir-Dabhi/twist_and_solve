@@ -78,6 +78,7 @@ class _ProgressGraphState extends State<ProgressGraph> {
                                   height: 250,
                                   child: LineChart(
                                     LineChartData(
+
                                       borderData: FlBorderData(show: false),
                                       minY: spotData.isNotEmpty
                                           ? spotData.map((e) => e.y).reduce((a, b) => a < b ? a : b) - 2
@@ -106,6 +107,43 @@ class _ProgressGraphState extends State<ProgressGraph> {
                                           isStrokeCapRound: true,
                                         ),
                                       ],
+                                      titlesData: FlTitlesData(
+                                        rightTitles: const AxisTitles(
+                                          sideTitles: SideTitles(showTitles: false),
+                                        ),
+                                        topTitles: const AxisTitles(
+                                          sideTitles: SideTitles(showTitles: false),
+                                        ),
+                                        bottomTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 24,
+                                            getTitlesWidget: (double value, TitleMeta meta) {
+                                              if (value >= 0 && value < snapshot2.data!.length) {
+                                                final date = snapshot2.data![value.toInt()].solveDate;
+                                                return Text(
+                                                  '${date.month}/${date.day}',
+                                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                                );
+                                              }
+                                              return const Text('');
+                                            },
+                                          ),
+                                        ),
+                                        leftTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            reservedSize: 24,
+                                            interval: 5,
+                                            getTitlesWidget: (value, meta) {
+                                              return Text(
+                                                value.toStringAsFixed(0),
+                                                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -170,8 +208,8 @@ class _ProgressGraphState extends State<ProgressGraph> {
   TableRow _buildTableRow(String label, String value, bool isGrey) {
     return TableRow(
       children: [
-        Container(color: isGrey ? Colors.grey[200] : Colors.white, padding: const EdgeInsets.all(8.0), child: Text(label)),
-        Container(color: isGrey ? Colors.grey[200] : Colors.white, padding: const EdgeInsets.all(8.0), child: Text(value)),
+        Container(color: isGrey ?  Theme.of(context).primaryColor : Theme.of(context).highlightColor, padding: const EdgeInsets.all(8.0), child: Text(label)),
+        Container(color: isGrey ? Theme.of(context).primaryColor : Theme.of(context).highlightColor, padding: const EdgeInsets.all(8.0), child: Text(value)),
       ],
     );
   }

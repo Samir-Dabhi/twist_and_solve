@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/Components/setting_component.dart';
+import 'package:twist_and_solve/Pages/send_otp.dart';
 import 'package:twist_and_solve/Pages/home_page.dart';
 import 'package:twist_and_solve/Pages/lession_list_page.dart';
 import 'package:twist_and_solve/Pages/login.dart';
@@ -47,7 +49,7 @@ class _MyAppState extends State<MyApp> {
       initialLocation: '/splash',
       redirect: (context, state) async {
         bool? isLoggedIn = await authService.getLoginStatusFromPrefs();
-        final loggingIn = state.location == '/login' || state.location == '/signup';
+        final loggingIn = state.location == '/login' || state.location == '/signup' || state.location == '/forgot' ;
         if (!isLoggedIn && !loggingIn) {
           return '/login';
         }
@@ -67,6 +69,11 @@ class _MyAppState extends State<MyApp> {
           path: '/signup',
           builder: (context, state) => SignUpPage(authService: authService),
         ),
+        GoRoute(
+          path: '/forgot',
+          builder: (context, state) => SendOtpScreen(),
+        ),
+//TODO:remove Goroute of resetpassword
         GoRoute(
           path: '/splash',
           builder: (context, state) => const SplashScreen(),
@@ -201,7 +208,7 @@ class _MyAppState extends State<MyApp> {
         bottomNavigationBarTheme:BottomNavigationBarThemeData(
           showSelectedLabels: true,
           showUnselectedLabels: true,
-          backgroundColor: darkBackgroundColor,
+          backgroundColor: darkPrimaryColor,
           selectedIconTheme: IconThemeData(
               color: darkHighlightColor
           ),
@@ -250,6 +257,7 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   Future<Map<String, dynamic>?>? _userInfoFuture;
+  DateTime timeBackPressed = DateTime.now();
 
   @override
   void initState() {
@@ -268,190 +276,209 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.account_circle_sharp),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: const Center(child: Text('Cube Trainer')),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-            child: GestureDetector(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  builder: (BuildContext context) {
-                    return SettingsPanel(
-                      isDarkMode: widget.isDarkMode,
-                      onThemeChanged: widget.onThemeChanged,
-                    );
-                  },
-                );
-              },
-              child: const Icon(Icons.settings),
-            ),
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        child: FutureBuilder<Map<String, dynamic>?>(
-          future: _userInfoFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError || snapshot.data == null) {
-              return ListView(
-                children: const [
-                  DrawerHeader(
-                    child: Text('Error loading user info'),
-                  ),
-                ],
-              );
-            }
+    return WillPopScope(
+      onWillPop: ()async{
+        final difference = DateTime.now().difference(timeBackPressed);
+        bool isExitWarning = true;
+        isExitWarning=difference >= const Duration(seconds: 2);
 
-            final userInfo = snapshot.data!;
-            final userName = userInfo['username'] ?? 'Unknown User';
-            final email = userInfo['email'] ?? 'Unknown Email';
-            final profilePicture = userInfo['profilePicture'] ?? 'https://res.cloudinary.com/dfsrzlxbv/image/upload/v1737723374/twist_and_solve/profile_pictures/ProfileAvtar_pl4qbr.webp';
-            return ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                UserAccountsDrawerHeader(
-                  accountName: Text(userName),
-                  accountEmail: Text(email),
-                  currentAccountPicture: CircleAvatar(
-                    backgroundColor: Colors.transparent, // Optional: For a transparent background
-                    child: ClipOval(
-                      child: Image.network(
-                        profilePicture,
-                        fit: BoxFit.cover, // Ensures the image covers the circle
-                      ),
+        timeBackPressed = DateTime.now();
+
+        if(isExitWarning){
+          const message = "Press back again to Exit!";
+          Fluttertoast.showToast(msg: message,fontSize: 18);
+          return false;
+        }
+        else{
+          Fluttertoast.cancel();
+          return true;
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.account_circle_sharp),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
+          title: const Center(child: Text('Cube Trainer')),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+              child: GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                     ),
-                  ),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.home),
-                  title: const Text('Home'),
-                  onTap: () {
-                    context.go('/home');
-                    Scaffold.of(context).closeDrawer();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.timer),
-                  title: const Text('Times'),
-                  onTap: () {
-                    context.go('/timelist');
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.video_collection_rounded),
-                  title: const Text('Lessons'),
-                  onTap: () {
-                    context.go('/lessonlist');
-                    Scaffold.of(context).closeDrawer();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.show_chart),
-                  title: const Text('Progress'),
-                  onTap: () {
-                    context.go('/progress');
-                    Scaffold.of(context).closeDrawer();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.emoji_events),
-                  title: const Text('Achievement'),
-                  onTap: () {
-                    context.go('/achievement');
-                    Scaffold.of(context).closeDrawer();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.functions),
-                  title: const Text('Algorithm'),
-                  onTap: () {
-                    context.go('/algorithm');
-                    Scaffold.of(context).closeDrawer();
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.logout),
-                  title: const Text('Logout'),
-                  onTap: _logout, // Call the logout method
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(CupertinoIcons.cube),
-                  title: const Text('3d Model of Rubik\'s Cube'),
-                  onTap: () {
-                    context.go('/rubik');
-                    Scaffold.of(context).closeDrawer();
-                  }, // Call the logout method
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-      body: widget.child,
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed, // Ensures the background color applies correctly
-          currentIndex: _getCurrentIndex(context),
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                context.go('/home');
-                break;
-              case 1:
-                context.go('/timelist');
-                break;
-              case 2:
-                context.go('/lessonlist');
-                break;
-              case 3:
-                context.go('/progress');
-                break;
-              case 4:
-                context.go('/achievement');
-                break;
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.timer),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.list),
-              label: 'Times',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.video_collection_rounded),
-              label: 'Lessons',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.show_chart),
-              label: 'Progress',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.emoji_events),
-              label: 'Achievement',
+                    builder: (BuildContext context) {
+                      return SettingsPanel(
+                        isDarkMode: widget.isDarkMode,
+                        onThemeChanged: widget.onThemeChanged,
+                      );
+                    },
+                  );
+                },
+                child: const Icon(Icons.settings),
+              ),
             ),
           ],
         ),
+        drawer: Drawer(
+          child: FutureBuilder<Map<String, dynamic>?>(
+            future: _userInfoFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError || snapshot.data == null) {
+                return ListView(
+                  children: const [
+                    DrawerHeader(
+                      child: Text('Error loading user info'),
+                    ),
+                  ],
+                );
+              }
+
+              final userInfo = snapshot.data!;
+              final userName = userInfo['username'] ?? 'Unknown User';
+              final email = userInfo['email'] ?? 'Unknown Email';
+              final profilePicture = userInfo['profilePicture'] ?? 'https://res.cloudinary.com/dfsrzlxbv/image/upload/v1737723374/twist_and_solve/profile_pictures/ProfileAvtar_pl4qbr.webp';
+              return ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  UserAccountsDrawerHeader(
+                    accountName: Text(userName),
+                    accountEmail: Text(email),
+                    currentAccountPicture: CircleAvatar(
+                      backgroundColor: Colors.transparent, // Optional: For a transparent background
+                      child: ClipOval(
+                        child: Image.network(
+                          profilePicture,
+                          fit: BoxFit.cover, // Ensures the image covers the circle
+                        ),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.home),
+                    title: const Text('Home'),
+                    onTap: () {
+                      context.go('/home');
+                      Scaffold.of(context).closeDrawer();
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.timer),
+                    title: const Text('Times'),
+                    onTap: () {
+                      context.go('/timelist');
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.video_collection_rounded),
+                    title: const Text('Lessons'),
+                    onTap: () {
+                      context.go('/lessonlist');
+                      Scaffold.of(context).closeDrawer();
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.show_chart),
+                    title: const Text('Progress'),
+                    onTap: () {
+                      context.go('/progress');
+                      Scaffold.of(context).closeDrawer();
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.emoji_events),
+                    title: const Text('Achievement'),
+                    onTap: () {
+                      context.go('/achievement');
+                      Scaffold.of(context).closeDrawer();
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.functions),
+                    title: const Text('Algorithm'),
+                    onTap: () {
+                      context.go('/algorithm');
+                      Scaffold.of(context).closeDrawer();
+                    },
+                  ),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text('Logout'),
+                    onTap: _logout, // Call the logout method
+                  ),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(CupertinoIcons.cube),
+                    title: const Text('3d Model of Rubik\'s Cube'),
+                    onTap: () {
+                      context.go('/rubik');
+                      Scaffold.of(context).closeDrawer();
+                    }, // Call the logout method
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        body: widget.child,
+          bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.fixed, // Ensures the background color applies correctly
+            currentIndex: _getCurrentIndex(context),
+            onTap: (index) {
+              switch (index) {
+                case 0:
+                  context.go('/home');
+                  break;
+                case 1:
+                  context.go('/timelist');
+                  break;
+                case 2:
+                  context.go('/lessonlist');
+                  break;
+                case 3:
+                  context.go('/progress');
+                  break;
+                case 4:
+                  context.go('/achievement');
+                  break;
+              }
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.timer),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.list),
+                label: 'Times',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.video_collection_rounded),
+                label: 'Lessons',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.show_chart),
+                label: 'Progress',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.emoji_events),
+                label: 'Achievement',
+              ),
+            ],
+          ),
 
 
+      ),
     );
   }
 
@@ -465,10 +492,11 @@ class _MainScaffoldState extends State<MainScaffold> {
     return 0; // Default to home if no match
   }
 }
-//TODO: UI Changes,dark mode TimeList page ,video page,progress Graph
 //TODO: 3D Cube with algo if it can be done
-//TODO: Navigation
 //TODO: Forget Passowrd implementation
+//TODO: Give All Achievements
+//TODO: only show Timer when it it on
+//TODO: Save data in sharedprefs so when user is offline he can still use app
 /*
 
 #f7e6ca,#d4c5ae,#82796b,#594423

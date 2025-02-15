@@ -114,7 +114,18 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () {
+                      debugPrint("clicked");
+                      context.go('/forgot'); // Navigate to Forgot Password page
+                    },
+                    child: const Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
                   isLoading
                       ? const CircularProgressIndicator()
                       : SizedBox(
