@@ -68,12 +68,13 @@ class _TimerComponentState extends State<TimerComponent> {
   }
 
   Future<void> _saveSolveTimeToDatabase(BuildContext context) async {
-    const String apiUrl = '${Constants.baseUrl}/Solve'; // Replace with your API endpoint
+    const String apiUrl = '${Constants.baseUrl}/Solve'; // API endpoint
     try {
       final prefs = await SharedPreferences.getInstance();
       final userInfoJson = prefs.getString('userInfo');
+      final token = prefs.getString('token');
 
-      if (userInfoJson == null) {
+      if (userInfoJson == null || token == null) {
         throw Exception('User not logged in.');
       }
 
@@ -83,7 +84,10 @@ class _TimerComponentState extends State<TimerComponent> {
 
       final response = await http.post(
         Uri.parse(apiUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: jsonEncode({
           "solveId": 0,
           "userId": userInfo['userId'],
@@ -102,26 +106,16 @@ class _TimerComponentState extends State<TimerComponent> {
         // Fetch achievement status
         Map<int, bool> achievementStatus = await fetchUserAchievementsStatus();
 
-        // Check if the user hasn't earned achievement 1 yet
+        // Check and award achievements
         if (achievementStatus[1] == false) {
-          // Award the achievement
           await postUserAchievement(1);
-
-          // 🎉 Show confetti animation
           _showConfetti();
-
-          // 🏆 Show achievement popup
           _showAchievementPopup(context, "First Solve!", "Congratulations! You've earned your first solve achievement.");
         }
-        if (achievementStatus[4] == false && solveTimeSeconds<30) {
-          // Award the achievement
+        if (achievementStatus[4] == false && solveTimeSeconds < 30) {
           await postUserAchievement(4);
-
-          // 🎉 Show confetti animation
           _showConfetti();
-
-          // 🏆 Show achievement popup
-          _showAchievementPopup(context, "Sub 30!", "Congratulations! You've earned your Solve Cube under 30 second achievement.");
+          _showAchievementPopup(context, "Sub 30!", "Congratulations! You've earned your Solve Cube under 30 seconds achievement.");
         }
       } else {
         debugPrint('Failed to save solve time: ${response.body}');
@@ -130,6 +124,7 @@ class _TimerComponentState extends State<TimerComponent> {
       debugPrint('Error saving solve time: $e');
     }
   }
+
 
   String _getFormattedTime() {
     final milliseconds = _stopwatch.elapsed.inMilliseconds;

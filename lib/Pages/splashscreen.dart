@@ -19,6 +19,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     // Start playing GIF on load
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _gifController.animateBack(1);
       _gifController.repeat(min: 0, max: 30, period: const Duration(seconds: 3));
     });
 

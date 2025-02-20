@@ -1,16 +1,23 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/constants.dart';
 
 class VideoService {
   static const String baseUrl = Constants.baseUrl;
 
   Future<List<VideoModel>> fetchVideosByLessonId(int lessonId) async {
-    final url = Uri.parse('$baseUrl/Video/ByLessonId/$lessonId'); // Replace with actual endpoint
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
 
-    //print
-    print(url.toString());
-    final response = await http.get(url);
+    final url = Uri.parse('$baseUrl/Video/ByLessonId/$lessonId');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> videoJson = json.decode(response.body);
@@ -19,6 +26,7 @@ class VideoService {
       throw Exception("Failed to load videos");
     }
   }
+
 }
 
 

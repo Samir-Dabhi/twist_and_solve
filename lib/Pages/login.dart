@@ -117,12 +117,12 @@ class _LoginPageState extends State<LoginPage> {
                   TextButton(
                     onPressed: () {
                       debugPrint("clicked");
-                      context.go('/forgot'); // Navigate to Forgot Password page
+                      context.push('/forgot'); // Navigate to Forgot Password page
                     },
                     child: const Text(
                       'Forgot Password?',
                       style: TextStyle(
-                        color: Colors.blue,
+                        color: Colors.black54,
                       ),
                     ),
                   ),
@@ -148,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 10),
                   TextButton(
                     onPressed: () {
-                      context.go('/signup');
+                      context.push('/signup');
                     },
                     child: const Text(
                       "Don't have an account? Sign up",

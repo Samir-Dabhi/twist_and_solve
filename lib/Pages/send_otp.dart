@@ -21,7 +21,7 @@ class _SendOtpScreenState extends State<SendOtpScreen> {
     String email = emailController.text.trim();
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please enter an email")),
+        const SnackBar(content: Text("Please enter an email")),
       );
       return;
     }
@@ -76,7 +76,7 @@ class _SendOtpScreenState extends State<SendOtpScreen> {
                   child: TextField(
                     controller: emailController,
                     decoration: const InputDecoration(
-                      floatingLabelStyle: const TextStyle(
+                      floatingLabelStyle: TextStyle(
                           color: Color(0xFF112D4E)
                       ),
                       labelText: "Enter your email",

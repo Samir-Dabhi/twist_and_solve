@@ -24,7 +24,8 @@ class AuthService {
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         _isLoggedIn = true;
-        await _storeUserInfo(responseData); // Save user info
+        storeToken(responseData["token"]);
+        await _storeUserInfo(responseData['user']); // Save user info
         return true;
       } else {
         throw Exception('Invalid credentials or server error.');
@@ -34,32 +35,51 @@ class AuthService {
     }
   }
 
-  Future<bool> signup(String username, String email, String password) async {
-    const String url = '${Constants.baseUrl}/User/';
+  Future<void> storeToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
+
+  Future<String> getToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    return token??"";
+  }
+
+  Future<bool> signup(String username, String email, String password, String token) async {
+    final String url = '${Constants.baseUrl}/User/';
 
     try {
-      final response = await http.post(
+      var response = await http.post(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "username": username,
-          "email": email,
-          "passwordHash": password,
-          "dateJoined": DateTime.now().toIso8601String(),
-          "profilePicture": "string",
-          "progressLevel": 0
-        }),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/x-www-form-urlencoded', // ✅ Use form encoding
+        },
+        body: {
+          "UserId": "0", // Form fields must be strings
+          "Username": username,
+          "Email": email,
+          "PasswordHash": password, // Keeping the original field name
+          "DateJoined": DateTime.now().toIso8601String(),
+        },
       );
+
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
+
+        print(responseData['token']); // ✅ Correct way to access the token
         _isLoggedIn = true;
-        await _storeUserInfo(responseData); // Save user info
+        storeToken(responseData["token"]);
+        await _storeUserInfo(responseData['user']); // Save user info
         return true;
       } else {
-        throw Exception('Signup failed. Please try again.');
+        print('Signup failed. Response: ${response.body}');
+        return false;
       }
     } catch (e) {
-      throw Exception('Error: $e');
+      print('Error: $e');
+      return false;
     }
   }
 

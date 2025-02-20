@@ -6,10 +6,10 @@ class VideoPlayerScreen extends StatefulWidget {
   final String videoName;
 
   const VideoPlayerScreen({
-    Key? key,
+    super.key,
     required this.videoUrl,
     required this.videoName,
-  }) : super(key: key);
+  });
 
   @override
   State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();

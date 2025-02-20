@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/constants.dart';
 
+const String baseUrl = Constants.baseUrl;
 
 
 class SolveModel {
@@ -40,27 +41,60 @@ class SolveModel {
   }
 }
 
-const String baseUrl = Constants.baseUrl;
 
 Future<List<SolveModel>> fetchSolvesByUserId() async {
   final prefs = await SharedPreferences.getInstance();
-  dynamic userInfoJson = prefs.getString('userInfo');
-  dynamic userInfo = jsonDecode(userInfoJson!);
+
+  // Retrieve user info and token
+  String? userInfoJson = prefs.getString('userInfo');
+  String? token = prefs.getString('token'); // Retrieve the token
+  if (userInfoJson == null || token == null) {
+    throw Exception('User info or token not found');
+  }
+
+  final userInfo = jsonDecode(userInfoJson);
   int userId = userInfo['userId'];
-  final response = await http.get(Uri.parse('$baseUrl/Solve/user/$userId'));
+
+  // Set up headers with the token
+  final headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token', // Include the token in Authorization header
+  };
+
+  final response = await http.get(
+    Uri.parse('$baseUrl/Solve/user/$userId'),
+    headers: headers, // Pass headers in the request
+  );
+
   if (response.statusCode == 200) {
     final List<dynamic> jsonData = json.decode(response.body);
     return jsonData.map((json) => SolveModel.fromJson(json)).toList();
   } else {
-    throw Exception('Failed to load solve data from api');
+    throw Exception('Failed to load solve data from API');
   }
 }
-Future<void> removeSolveFromApi(int solveID) async {
-  final response = await http.delete(Uri.parse('$baseUrl/Solve/$solveID'));
-  if (response.statusCode == 200) {
 
+Future<void> removeSolveFromApi(int solveID) async {
+  final prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('token'); // Retrieve token
+
+  if (token == null) {
+    throw Exception('Token not found. Please log in again.');
+  }
+
+  final headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token', // Attach JWT token
+  };
+
+  final response = await http.delete(
+    Uri.parse('$baseUrl/Solve/$solveID'),
+    headers: headers, // Pass headers
+  );
+
+  if (response.statusCode == 200) {
   } else {
-    throw Exception('Failed to delete solve data!');
+    throw Exception('Failed to delete solve data! Status Code: ${response.statusCode}');
   }
 }
 class Stats{

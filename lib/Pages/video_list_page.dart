@@ -5,7 +5,7 @@ import 'package:twist_and_solve/Service/video_service.dart';
 class VideoListPage extends StatefulWidget {
   final int lessonId;
 
-  const VideoListPage({Key? key, required this.lessonId}) : super(key: key);
+  const VideoListPage({super.key, required this.lessonId});
 
   @override
   State<VideoListPage> createState() => _VideoListPageState();

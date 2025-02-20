@@ -28,7 +28,8 @@ class Achievements {
   }
 }
 Future<List<Achievements>> fetchAchievements() async {
-  final response = await http.get(Uri.parse('http://localhost:5167/Achievement'));
+  const String url = '${Constants.baseUrl}/Achievement';
+  final response = await http.get(Uri.parse(url));
 
   if (response.statusCode == 200) {
     List<dynamic> data = json.decode(response.body);

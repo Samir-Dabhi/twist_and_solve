@@ -37,46 +37,63 @@ class UserAchievement {
   }
 }
 
+// Fetch user achievements
 Future<List<UserAchievement>> fetchUserAchievements() async {
   List<Achievements> achievements = await fetchAchievements();
   debugPrint('achievements = ');
   debugPrint(achievements[0].title);
+
   final prefs = await SharedPreferences.getInstance();
-  dynamic userInfoJson = prefs.getString('userInfo');
-  dynamic userInfo = jsonDecode(userInfoJson!);
+  final userInfoJson = prefs.getString('userInfo');
+  final token = prefs.getString('token'); // Retrieve the token
+
+  if (userInfoJson == null || token == null) {
+    throw Exception('User not logged in or token missing.');
+  }
+
+  final userInfo = jsonDecode(userInfoJson);
   int userId = userInfo['userId'];
+
   final response = await http.get(
-    Uri.parse('http://localhost:5167/UserAchievement/user/$userId'),
+    Uri.parse('${Constants.baseUrl}/UserAchievement/user/$userId'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
   );
+
   if (response.statusCode == 200) {
     final List<dynamic> data = json.decode(response.body);
     return data.map((json) => UserAchievement.fromJson(json)).toList();
-  }
-  else if(response.statusCode == 404) {
+  } else if (response.statusCode == 404) {
     throw Exception('No User Achievement found');
-  }
-  else{
+  } else {
     throw Exception('Error fetching Achievement');
   }
 }
 
+// Post user achievement
 Future<void> postUserAchievement(int achievementId) async {
-  String apiUrl = '${Constants.baseUrl}/UserAchievement'; // Use base URL from Constants
+  String apiUrl = '${Constants.baseUrl}/UserAchievement';
 
   try {
     final prefs = await SharedPreferences.getInstance();
     final userInfoJson = prefs.getString('userInfo');
+    final token = prefs.getString('token');
 
-    if (userInfoJson == null) {
-      throw Exception('User not logged in.');
+    if (userInfoJson == null || token == null) {
+      throw Exception('User not logged in or token missing.');
     }
 
-    final userInfo = jsonDecode(userInfoJson) as Map<String, dynamic>;
+    final userInfo = jsonDecode(userInfoJson);
     final userId = userInfo['userId'];
 
     final response = await http.post(
       Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
       body: jsonEncode({
         "userAchievementId": 0, // Assuming API auto-generates ID
         "userId": userId,
@@ -95,49 +112,56 @@ Future<void> postUserAchievement(int achievementId) async {
   }
 }
 
+// Fetch user achievements status
 Future<Map<int, bool>> fetchUserAchievementsStatus() async {
-  String allAchievementsUrl = '${Constants.baseUrl}/Achievement'; // Fetch all achievements
-  String userAchievementsUrl = '${Constants.baseUrl}/UserAchievement/user'; // Fetch user-earned achievements
+  String allAchievementsUrl = '${Constants.baseUrl}/Achievement';
+  String userAchievementsUrl = '${Constants.baseUrl}/UserAchievement/user';
 
   try {
     final prefs = await SharedPreferences.getInstance();
     final userInfoJson = prefs.getString('userInfo');
+    final token = prefs.getString('token');
 
-    if (userInfoJson == null) {
-      throw Exception('User not logged in.');
+    if (userInfoJson == null || token == null) {
+      throw Exception('User not logged in or token missing.');
     }
 
-    final userInfo = jsonDecode(userInfoJson) as Map<String, dynamic>;
+    final userInfo = jsonDecode(userInfoJson);
     final userId = userInfo['userId'];
 
-    // Fetch all achievements
-    final allAchievementsResponse = await http.get(Uri.parse(allAchievementsUrl));
+    final allAchievementsResponse = await http.get(
+      Uri.parse(allAchievementsUrl),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
     if (allAchievementsResponse.statusCode != 200) {
       throw Exception('Failed to load all achievements');
     }
-    List<dynamic> allAchievementsData = json.decode(allAchievementsResponse.body);
 
-    // Initialize achievement status map with all achievements set to false
+    List<dynamic> allAchievementsData = json.decode(allAchievementsResponse.body);
     Map<int, bool> achievementStatus = {
       for (var achievement in allAchievementsData) achievement['achievementId']: false
     };
 
-    // Fetch user-earned achievements
-    final userAchievementsResponse = await http.get(Uri.parse('$userAchievementsUrl/$userId'));
+    final userAchievementsResponse = await http.get(
+      Uri.parse('$userAchievementsUrl/$userId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
     if (userAchievementsResponse.statusCode == 200) {
       List<dynamic> userAchievementsData = json.decode(userAchievementsResponse.body);
-      print(userAchievementsData);
-      // Mark achievements as earned
       for (var achievement in userAchievementsData) {
         int achievementId = achievement['achievementId'];
         achievementStatus[achievementId] = true;
       }
     }
-    print(userId);
-    print(achievementStatus);
+
     return achievementStatus;
   } catch (e) {
-    print('Error fetching achievements: $e');
-    return {}; // Return an empty map on error
+    return {};
   }
 }

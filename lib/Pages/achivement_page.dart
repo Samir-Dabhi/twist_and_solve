@@ -139,7 +139,9 @@ class AchievementPage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Center(child: Text(achievement.title)),
+          title: Center(child: Text(achievement.title,style: const TextStyle(
+            color: Colors.blue
+          ),)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,7 +162,10 @@ class AchievementPage extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
+              child: const Text('Close',
+                style: TextStyle(
+                  color: Colors.blue
+              ),),
             ),
           ],
         );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/Pages/reset_password_screen.dart';
 import 'dart:convert';
 
@@ -38,6 +39,8 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
 
       final responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setString("resetToken", responseData["token"]);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(responseData["message"])),
         );
@@ -65,31 +68,59 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Verify OTP")),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Text("OTP sent to ${widget.email}", style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 10),
-            TextField(
-              controller: otpController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Enter OTP",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
-              ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Card(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("OTP sent to ${widget.email}",
+                      style: const TextStyle(fontSize: 16)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: otpController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      floatingLabelStyle: TextStyle(color: Color(0xFF112D4E)),
+                      labelText: "Enter OTP",
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.lock),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                isLoading
+                    ? const CircularProgressIndicator()
+                    : Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFA6E3E9),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: verifyOtp,
+                      child: const Text(
+                        "Verify OTP",
+                        style: TextStyle(color: Color(0xFF112D4E)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-              onPressed: verifyOtp,
-              child: const Text("Verify OTP"),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+
 }

@@ -4,6 +4,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/Components/setting_component.dart';
+import 'package:twist_and_solve/Pages/algorithm_category.dart';
+import 'package:twist_and_solve/Pages/algorithm_page.dart';
 import 'package:twist_and_solve/Pages/send_otp.dart';
 import 'package:twist_and_solve/Pages/home_page.dart';
 import 'package:twist_and_solve/Pages/lession_list_page.dart';
@@ -16,7 +18,6 @@ import 'package:twist_and_solve/Pages/time_list_page.dart';
 import 'package:twist_and_solve/Pages/video_list_page.dart';
 import 'package:twist_and_solve/Pages/video_player_screen.dart';
 import 'package:twist_and_solve/Pages/achivement_page.dart';
-import 'package:twist_and_solve/Pages/algorithm_page.dart';
 import 'package:twist_and_solve/Service/auth_service.dart';
 
 
@@ -71,9 +72,8 @@ class _MyAppState extends State<MyApp> {
         ),
         GoRoute(
           path: '/forgot',
-          builder: (context, state) => SendOtpScreen(),
+          builder: (context, state) => const SendOtpScreen(),
         ),
-//TODO:remove Goroute of resetpassword
         GoRoute(
           path: '/splash',
           builder: (context, state) => const SplashScreen(),
@@ -137,7 +137,14 @@ class _MyAppState extends State<MyApp> {
             GoRoute(
               path: '/algorithm',
               builder: (context, state) {
-                return const AlgorithmPage();
+                return AlgorithmCategoriesPage();
+              },
+            ),
+            GoRoute(
+              path: '/algorithm/:category',
+              builder: (context, state) {
+                final category = state.params['lessonId']!;
+                return AlgorithmDetailPage(category: category);
               },
             ),
             GoRoute(
@@ -190,7 +197,7 @@ class _MyAppState extends State<MyApp> {
           style: ElevatedButton.styleFrom(
             backgroundColor: highlightColor,
           )
-      )
+      ),
       ),
       darkTheme: ThemeData.from(
         colorScheme: ColorScheme.dark(
@@ -493,10 +500,11 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 }
 //TODO: 3D Cube with algo if it can be done
-//TODO: Forget Passowrd implementation
 //TODO: Give All Achievements
 //TODO: only show Timer when it it on
 //TODO: Save data in sharedprefs so when user is offline he can still use app
+//TODO: Navigation For Video Page
+//TODO: Handel Token expiry
 /*
 
 #f7e6ca,#d4c5ae,#82796b,#594423
