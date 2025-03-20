@@ -20,6 +20,8 @@ import 'package:twist_and_solve/Pages/video_player_screen.dart';
 import 'package:twist_and_solve/Pages/achivement_page.dart';
 import 'package:twist_and_solve/Service/auth_service.dart';
 
+import 'Pages/video_player.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -50,7 +52,8 @@ class _MyAppState extends State<MyApp> {
       initialLocation: '/splash',
       redirect: (context, state) async {
         bool? isLoggedIn = await authService.getLoginStatusFromPrefs();
-        final loggingIn = state.location == '/login' || state.location == '/signup' || state.location == '/forgot' ;
+        final loggingIn = state.location == '/login' || state.location == '/signup' || state.location == '/forgot';
+
         if (!isLoggedIn && !loggingIn) {
           return '/login';
         }
@@ -78,31 +81,42 @@ class _MyAppState extends State<MyApp> {
           path: '/splash',
           builder: (context, state) => const SplashScreen(),
         ),
+
+        /// ✅ MOVE `/videoPlayer` OUTSIDE `ShellRoute`
+        GoRoute(
+          path: '/videoPlayer',
+          pageBuilder: (context, state) {
+            final videoUrl = state.queryParams['videoUrl'] ?? "https://www.youtube.com/watch?v=IWXpkfwimo0";
+            final videoName = state.queryParams['videoName'] ?? "Default Video";
+
+            return CustomTransitionPage(
+              key: state.pageKey,
+              fullscreenDialog: true, // ✅ Ensures fullscreen without AppBar/BottomNav
+              child: YoutubeVideoPlayer(videoUrl: videoUrl, videoName: videoName),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+            );
+          },
+        ),
+
+        /// ✅ SHELL ROUTE (Other routes remain inside this)
         ShellRoute(
           builder: (context, state, child) {
             return MainScaffold(
               isDarkMode: _isDarkMode,
               onThemeChanged: (bool value) {
                 setState(() {
-                  _isDarkMode = value; // Update dark mode state
+                  _isDarkMode = value;
                 });
               },
               child: child,
             );
           },
           routes: [
-            GoRoute(
-              path: '/home',
-              builder: (context, state) => const Homepage(),
-            ),
-            GoRoute(
-              path: '/timelist',
-              builder: (context, state) => TimeList(),
-            ),
-            GoRoute(
-              path: '/lessonlist',
-              builder: (context, state) => const LessonListPage(),
-            ),
+            GoRoute(path: '/home', builder: (context, state) => const Homepage()),
+            GoRoute(path: '/timelist', builder: (context, state) => TimeList()),
+            GoRoute(path: '/lessonlist', builder: (context, state) => const LessonListPage()),
             GoRoute(
               path: '/videos/:lessonId',
               builder: (context, state) {
@@ -110,53 +124,22 @@ class _MyAppState extends State<MyApp> {
                 return VideoListPage(lessonId: lessonId);
               },
             ),
-            GoRoute(
-              path: '/videoPlayer',
-              builder: (context, state) {
-                final videoUrl = Uri.decodeComponent(state.queryParams['videoUrl']!);
-                final videoName = Uri.decodeComponent(state.queryParams['videoName']!);
-
-                return VideoPlayerScreen(
-                  videoUrl: videoUrl,
-                  videoName: videoName,
-                );
-              },
-            ),
-            GoRoute(
-              path: '/progress',
-              builder: (context, state) {
-                return const ProgressPage();
-              },
-            ),
-            GoRoute(
-              path: '/achievement',
-              builder: (context, state) {
-                return const AchievementPage();
-              },
-            ),
-            GoRoute(
-              path: '/algorithm',
-              builder: (context, state) {
-                return AlgorithmCategoriesPage();
-              },
-            ),
+            GoRoute(path: '/progress', builder: (context, state) => const ProgressPage()),
+            GoRoute(path: '/achievement', builder: (context, state) => const AchievementPage()),
+            GoRoute(path: '/algorithm', builder: (context, state) => AlgorithmCategoriesPage()),
             GoRoute(
               path: '/algorithm/:category',
               builder: (context, state) {
-                final category = state.params['lessonId']!;
+                final category = state.params['category']!;
                 return AlgorithmDetailPage(category: category);
               },
             ),
-            GoRoute(
-              path: '/rubik',
-              builder: (context, state) {
-                return const RubikCubePage();
-              },
-            ),
+            GoRoute(path: '/rubik', builder: (context, state) => const RubikCubePage()),
           ],
         ),
       ],
     );
+
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
@@ -499,12 +482,12 @@ class _MainScaffoldState extends State<MainScaffold> {
     return 0; // Default to home if no match
   }
 }
-//TODO: 3D Cube with algo if it can be done
 //TODO: Give All Achievements
-//TODO: only show Timer when it it on
-//TODO: Save data in sharedprefs so when user is offline he can still use app
-//TODO: Navigation For Video Page
-//TODO: Handel Token expiry
+//TODO: open authorization
+//TODO: see password ,login header change
+//TODO: setting panel change
+//TODO: refresstoken implement properly
+//TODO: _showConfetti
 /*
 
 #f7e6ca,#d4c5ae,#82796b,#594423

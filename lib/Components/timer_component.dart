@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,11 +22,13 @@ class _TimerComponentState extends State<TimerComponent> {
   late Stopwatch _stopwatch;
   late Timer _timer;
   bool _isStoppedOnce = false;
+  late String scramble;
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 2));
     _stopwatch = Stopwatch();
+    scramble = generateScramble();
     _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       if (mounted) {
         setState(() {}); // Update UI every 30ms
@@ -44,6 +47,29 @@ class _TimerComponentState extends State<TimerComponent> {
     _confettiController.play();
   }
 
+  String generateScramble({int length = 20}) {
+    final random = Random();
+    final moves = ['U', 'D', 'L', 'R', 'F', 'B'];
+    final modifiers = ['', "'", '2'];
+
+    String lastMove = "";
+    List<String> scramble = [];
+
+    for (int i = 0; i < length; i++) {
+      String move;
+
+      // Ensure no consecutive duplicate moves
+      do {
+        move = moves[random.nextInt(moves.length)];
+      } while (move == lastMove);
+
+      lastMove = move;
+      String modifier = modifiers[random.nextInt(modifiers.length)];
+      scramble.add(move + modifier);
+    }
+
+    return scramble.join(' ');
+  }
 
   void _toggleStartStop() {
     if (_stopwatch.isRunning) {
@@ -96,7 +122,7 @@ class _TimerComponentState extends State<TimerComponent> {
           "method": "Beginner",
           "movesCount": 50,
           "solveResult": "Success",
-          "scramble": "F R U R U F U R U R U R U2 R"
+          "scramble": scramble
         }),
       );
 
@@ -125,14 +151,39 @@ class _TimerComponentState extends State<TimerComponent> {
     }
   }
 
+  void _showScramblePopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text("Scramble", textAlign: TextAlign.center),
+          content: SingleChildScrollView(
+            child: Text(
+              scramble,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK",style: TextStyle(color: Colors.black54),),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   String _getFormattedTime() {
     final milliseconds = _stopwatch.elapsed.inMilliseconds;
-    final milli = (milliseconds % 100).toString().padLeft(2, "0");
+    final milli = ((milliseconds % 1000) ~/ 10).toString().padLeft(2, "0"); // Get two-digit milliseconds
     final seconds = ((milliseconds ~/ 1000) % 60).toString().padLeft(2, "0");
     final minutes = ((milliseconds ~/ 1000) ~/ 60).toString().padLeft(2, "0");
-    return int.parse(minutes) > 0 ? "$minutes:$seconds:$milli" : "$seconds:$milli";
+    return int.parse(minutes) > 0 ? "$minutes:$seconds.$milli" : "$seconds.$milli";
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -146,52 +197,52 @@ class _TimerComponentState extends State<TimerComponent> {
       body: Stack(
         alignment: Alignment.center,
         children: [
-          InkWell(
-            onTap: _toggleStartStop,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Timer display
-                Container(
-                  height: 250,
-                  alignment: Alignment.center,
-                  child: Text(
-                    _getFormattedTime(),
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 70,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                // Control buttons
-                Row(
+              InkWell(
+                onTap: _toggleStartStop,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    IconButton(
-                      onPressed: _resetTimer,
-                      icon: const Icon(Icons.close, color: Colors.red),
-                      tooltip: 'Cancel Timer',
+                    // Timer display
+                    Container(
+                      height: 250,
+                      alignment: Alignment.center,
+                      child: Text(
+                        _getFormattedTime(),
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 70,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    IconButton(
-                      onPressed: () async {
-                        final formattedTime = _getFormattedTime();
-                        await _saveSolveTimeToPrefs(formattedTime);
-                        await _saveSolveTimeToDatabase(context);
-                      },
-                      icon: const Icon(Icons.done, color: Colors.green),
-                      tooltip: 'Save Solve',
-                    ),
-                    IconButton(
-                      onPressed: _resetTimer,
-                      icon: Icon(Icons.restore, color: iconColor),
-                      tooltip: 'Restart Timer',
+                    // Control buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: _resetTimer,
+                          icon: const Icon(Icons.close, color: Colors.red),
+                          tooltip: 'Cancel Timer',
+                        ),
+                        IconButton(
+                          onPressed: () async {
+                            final formattedTime = _getFormattedTime();
+                            await _saveSolveTimeToPrefs(formattedTime);
+                            await _saveSolveTimeToDatabase(context);
+                          },
+                          icon: const Icon(Icons.done, color: Colors.green),
+                          tooltip: 'Save Solve',
+                        ),
+                        IconButton(
+                          onPressed: _showScramblePopup,
+                          icon: Icon(Icons.info_outline, color: iconColor),
+                          tooltip: 'See Scramble',
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
 
           // 🎉 Confetti Widget added here!
           Positioned(

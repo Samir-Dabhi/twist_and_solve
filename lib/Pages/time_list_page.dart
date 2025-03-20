@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../Service/solve_service.dart';
+import 'package:intl/intl.dart';
 
 class TimeList extends StatefulWidget {
   @override
@@ -21,18 +22,65 @@ class _TimeListState extends State<TimeList> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Cancel",style: TextStyle(
-              color: Colors.black26
-            ),),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: Colors.black26),
+            ),
           ),
           TextButton(
             onPressed: () {
               removeSolveFromApi(solveId);
-              setState(() {});
+              setState(() {}); // Refresh list after deletion
               Navigator.of(context).pop();
             },
             child: const Text("Delete", style: TextStyle(color: Colors.red)),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showSolveDetailsPopup(BuildContext context, SolveModel solve) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Center(
+              child: Text("Solve Details", style: TextStyle(fontWeight: FontWeight.bold))),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDetailRow("Solve Time", "${solve.solveTime.toStringAsFixed(2)} sec"),
+              _buildDetailRow("Moves Count", "${solve.movesCount}"),
+              _buildDetailRow("Solve Date", DateFormat('yyyy-MM-dd').format(solve.solveDate)),
+              _buildDetailRow("Method", solve.method ?? "N/A"),
+              const SizedBox(height: 10),
+              const Text("Scramble:", style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(solve.scramble ?? "N/A",
+                  textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic)),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Close",style: TextStyle(color: Colors.black54),),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value, style: const TextStyle(fontSize: 16)),
         ],
       ),
     );
@@ -55,7 +103,8 @@ class _TimeListState extends State<TimeList> {
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No records found.', style: TextStyle(fontSize: 18)));
+                return const Center(
+                    child: Text('No records found.', style: TextStyle(fontSize: 18)));
               }
 
               final timeList = snapshot.data!;
@@ -68,18 +117,21 @@ class _TimeListState extends State<TimeList> {
                   mainAxisExtent: 60,
                 ),
                 itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    child: ListTile(
-                      title: Text(
-                        ((timeList[index].solveTime.toString()+'00').substring(0,5)),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.redAccent),
-                        onPressed: () => _confirmDelete(index, timeList[index].solveId),
+                  return GestureDetector(
+                    onTap: () => _showSolveDetailsPopup(context, timeList[index]),
+                    child: Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      child: ListTile(
+                        title: Text(
+                          ((timeList[index].solveTime.toString() + '00').substring(0, 5)),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.redAccent),
+                          onPressed: () => _confirmDelete(index, timeList[index].solveId),
+                        ),
                       ),
                     ),
                   );

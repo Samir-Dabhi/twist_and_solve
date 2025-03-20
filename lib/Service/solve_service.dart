@@ -48,6 +48,7 @@ Future<List<SolveModel>> fetchSolvesByUserId() async {
   // Retrieve user info and token
   String? userInfoJson = prefs.getString('userInfo');
   String? token = prefs.getString('token'); // Retrieve the token
+  print(token);
   if (userInfoJson == null || token == null) {
     throw Exception('User info or token not found');
   }

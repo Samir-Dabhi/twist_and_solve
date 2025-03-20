@@ -89,7 +89,10 @@ class _VideoListPageState extends State<VideoListPage> {
                       final videoUrl = Uri.encodeComponent(video.videoUrl ?? '');
                       final videoName = Uri.encodeComponent(video.name ?? 'Video');
 
-                      context.go('/videoPlayer?videoUrl=$videoUrl&videoName=$videoName');
+                      context.go('/videoPlayer', extra: {
+                        'videoUrl': videoUrl,
+                        'videoName': videoName,
+                      });
                     },
                   ),
                 ),

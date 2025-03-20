@@ -21,13 +21,6 @@ class _RubikCubePageState extends State<RubikCubePage> {
 
       // Fetch available animations
       animations = await controller.getAvailableAnimations();
-      animations.remove('Action.005');
-      animations.remove('Action.003');
-      animations.remove('Action.007');
-      animations.remove('Action.001');
-      animations.remove('Action.008');
-      animations.remove('Action.002');
-      animations.remove('Action.006');
       debugPrint('Available Animations: $animations');
     });
   }
@@ -59,31 +52,38 @@ class _RubikCubePageState extends State<RubikCubePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("3D Cube Animations")),
-      body: Center(
-        child: SizedBox(
-          height: 400,
-          child: Flutter3DViewer(
-            activeGestureInterceptor: true,
-            progressBarColor: Colors.orange,
-            enableTouch: true,
-            onProgress: (double progressValue) {
-              debugPrint('Model loading progress: $progressValue');
-            },
-            onLoad: (String modelAddress) {
-              debugPrint('Model loaded: $modelAddress');
-            },
-            onError: (String error) {
-              debugPrint('Model failed to load: $error');
-            },
-            controller: controller,
-            src: 'assets/models/cube1.glb',
+      body: Column(
+        children: [
+          Expanded(
+            child: const Center(
+              child: Text("Comming Soon!!!!",style: TextStyle(fontSize: 18),),
+            ),
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: isPlaying ? stopAllAnimations : playAllAnimations,
-        child: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+          Expanded(
+            flex: 5,
+            child: Center(
+              child: SizedBox(
+                height: 400,
+                child: Flutter3DViewer(
+                  activeGestureInterceptor: true,
+                  progressBarColor: Colors.orange,
+                  enableTouch: true,
+                  onProgress: (double progressValue) {
+                    debugPrint('Model loading progress: $progressValue');
+                  },
+                  onLoad: (String modelAddress) {
+                    debugPrint('Model loaded: $modelAddress');
+                  },
+                  onError: (String error) {
+                    debugPrint('Model failed to load: $error');
+                  },
+                  controller: controller,
+                  src: 'assets/models/cube1.glb',
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

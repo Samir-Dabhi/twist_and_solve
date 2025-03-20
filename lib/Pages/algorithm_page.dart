@@ -5,6 +5,7 @@ class AlgorithmDetailPage extends StatefulWidget {
   final String category;
   const AlgorithmDetailPage({super.key, required this.category});
 
+
   @override
   _AlgorithmDetailPageState createState() => _AlgorithmDetailPageState();
 }

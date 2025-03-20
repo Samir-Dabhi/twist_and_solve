@@ -15,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
+  bool isPasswordVisible = false; // Toggle for password visibility
 
   void authenticateUser() async {
     final email = emailController.text.trim();
@@ -48,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         isLoading = false;
       });
-
+      print(e.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString()),
@@ -90,10 +91,10 @@ class _LoginPageState extends State<LoginPage> {
                     controller: emailController,
                     decoration: InputDecoration(
                       floatingLabelStyle: const TextStyle(
-                        color: Color(0xFF112D4E)
+                          color: Color(0xFF112D4E)
                       ),
                       labelText: 'Email',
-                      prefixIcon: const Icon(Icons.email,),
+                      prefixIcon: const Icon(Icons.email),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -102,13 +103,23 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: passwordController,
-                    obscureText: true,
+                    obscureText: !isPasswordVisible, // Toggles visibility
                     decoration: InputDecoration(
                       floatingLabelStyle: const TextStyle(
                           color: Color(0xFF112D4E)
                       ),
                       labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock,),
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible; // Toggle state
+                          });
+                        },
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -153,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: const Text(
                       "Don't have an account? Sign up",
                       style: TextStyle(
-                        color: Colors.black54
+                          color: Colors.black54
                       ),
                     ),
                   ),

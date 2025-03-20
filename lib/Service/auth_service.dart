@@ -12,7 +12,6 @@ class AuthService {
     String url = '${Constants.baseUrl}/User/auth';
 
     try {
-
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
@@ -23,9 +22,12 @@ class AuthService {
       );
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        print(responseData['user']);
         _isLoggedIn = true;
-        storeToken(responseData["token"]);
-        await _storeUserInfo(responseData['user']); // Save user info
+        print(responseData["token"]);
+        await storeToken(responseData["token"]["accessToken"]);
+        await storeRefreshToken(responseData["token"]["refreshToken"]);
+        await _storeUserInfo(responseData['user']);
         return true;
       } else {
         throw Exception('Invalid credentials or server error.');
@@ -40,10 +42,52 @@ class AuthService {
     await prefs.setString('token', token);
   }
 
-  Future<String> getToken(String token) async {
+  Future<void> storeRefreshToken(String refreshToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('refreshToken', refreshToken);
+  }
+
+  Future<String> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
-    return token??"";
+
+    if (token == null || token.isEmpty) {
+      return await refreshToken() ?? "";
+    }
+
+    return token;
+  }
+
+  Future<String?> refreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? refreshToken = prefs.getString('refreshToken');
+
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return null;
+    }
+
+    final String url = '${Constants.baseUrl}/User/refresh';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"refreshToken": refreshToken}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        String newAccessToken = responseData["accessToken"];
+        await storeToken(newAccessToken);
+        return newAccessToken;
+      } else {
+        await logout(); // If refresh token fails, force logout
+        return null;
+      }
+    } catch (e) {
+      print("Error refreshing token: $e");
+      return null;
+    }
   }
 
   Future<bool> signup(String username, String email, String password, String token) async {
@@ -54,24 +98,23 @@ class AuthService {
         Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/x-www-form-urlencoded', // ✅ Use form encoding
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: {
-          "UserId": "0", // Form fields must be strings
+          "UserId": "0",
           "Username": username,
           "Email": email,
-          "PasswordHash": password, // Keeping the original field name
+          "PasswordHash": password,
           "DateJoined": DateTime.now().toIso8601String(),
         },
       );
 
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-
-        print(responseData['token']); // ✅ Correct way to access the token
+        print(responseData['token']);
         _isLoggedIn = true;
-        storeToken(responseData["token"]);
-        await _storeUserInfo(responseData['user']); // Save user info
+        await storeToken(responseData["token"]);
+        await _storeUserInfo(responseData['user']);
         return true;
       } else {
         print('Signup failed. Response: ${response.body}');
@@ -86,7 +129,7 @@ class AuthService {
   Future<void> logout() async {
     _isLoggedIn = false;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // Clear all stored user data
+    await prefs.clear();
   }
 
   static Future<Map<String, dynamic>?> getUserInfo() async {
