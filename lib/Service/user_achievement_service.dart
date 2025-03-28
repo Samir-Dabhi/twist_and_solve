@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/Service/achievement_service.dart';
+import 'package:twist_and_solve/Service/auth_service.dart';
+import 'package:twist_and_solve/Service/solve_service.dart';
 import 'package:twist_and_solve/constants.dart';
 
 class UserAchievement {
@@ -73,7 +75,7 @@ Future<List<UserAchievement>> fetchUserAchievements() async {
 }
 
 // Post user achievement
-Future<void> postUserAchievement(int achievementId) async {
+Future<bool> postUserAchievement(int achievementId) async {
   String apiUrl = '${Constants.baseUrl}/UserAchievement';
 
   try {
@@ -104,13 +106,18 @@ Future<void> postUserAchievement(int achievementId) async {
 
     if (response.statusCode == 201) {
       debugPrint('Achievement posted successfully!');
+      return true;
     } else {
       debugPrint('Failed to post achievement: ${response.body}');
+      return false;
     }
   } catch (e) {
     debugPrint('Error posting achievement: $e');
+    return false;
   }
 }
+
+
 
 // Fetch user achievements status
 Future<Map<int, bool>> fetchUserAchievementsStatus() async {

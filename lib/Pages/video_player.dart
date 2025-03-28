@@ -31,7 +31,6 @@ class _YoutubeVideoPlayerState extends State<YoutubeVideoPlayer> {
         DeviceOrientation.landscapeRight,
       ]);
     });
-
     final videoID = YoutubePlayer.convertUrlToId(widget.videoUrl);
     _controller = YoutubePlayerController(
       initialVideoId: videoID!,
@@ -39,6 +38,7 @@ class _YoutubeVideoPlayerState extends State<YoutubeVideoPlayer> {
         autoPlay: true,
         mute: false,
         useHybridComposition: true,
+        disableDragSeek: true,
       ),
     );
   }

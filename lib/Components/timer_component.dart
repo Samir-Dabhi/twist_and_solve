@@ -23,12 +23,14 @@ class _TimerComponentState extends State<TimerComponent> {
   late Timer _timer;
   bool _isStoppedOnce = false;
   late String scramble;
+  late bool showControlButtons;
   @override
   void initState() {
     super.initState();
     _confettiController = ConfettiController(duration: const Duration(seconds: 2));
     _stopwatch = Stopwatch();
     scramble = generateScramble();
+    showControlButtons = false;
     _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       if (mounted) {
         setState(() {}); // Update UI every 30ms
@@ -74,6 +76,7 @@ class _TimerComponentState extends State<TimerComponent> {
   void _toggleStartStop() {
     if (_stopwatch.isRunning) {
       _isStoppedOnce = true;
+      showControlButtons = true;
       _stopwatch.stop();
     } else if (!_isStoppedOnce) {
       _stopwatch.start();
@@ -82,6 +85,7 @@ class _TimerComponentState extends State<TimerComponent> {
 
   void _resetTimer() {
     _isStoppedOnce = false;
+    showControlButtons = false;
     _stopwatch.reset();
   }
 
@@ -105,7 +109,7 @@ class _TimerComponentState extends State<TimerComponent> {
       }
 
       final userInfo = jsonDecode(userInfoJson) as Map<String, dynamic>;
-      final solveTimeMilliseconds = _stopwatch.elapsed.inMilliseconds;
+      final solveTimeMilliseconds = (_stopwatch.elapsed.inMilliseconds).toDouble();
       final solveTimeSeconds = solveTimeMilliseconds / 1000;
 
       final response = await http.post(
@@ -131,12 +135,19 @@ class _TimerComponentState extends State<TimerComponent> {
 
         // Fetch achievement status
         Map<int, bool> achievementStatus = await fetchUserAchievementsStatus();
-
+        print(achievementStatus);
         // Check and award achievements
         if (achievementStatus[1] == false) {
-          await postUserAchievement(1);
+          bool isInserted = await postUserAchievement(1);
+          if(isInserted){
+            _showConfetti();
+            _showAchievementPopup(context, "First Solve!", "Congratulations! You've earned your first solve achievement.");
+          }
+        }
+        if (achievementStatus[4] == false && solveTimeSeconds < 30) {
+          await postUserAchievement(4);
           _showConfetti();
-          _showAchievementPopup(context, "First Solve!", "Congratulations! You've earned your first solve achievement.");
+          _showAchievementPopup(context, "Sub 30!", "Congratulations! You've earned your Solve Cube under 30 seconds achievement.");
         }
         if (achievementStatus[4] == false && solveTimeSeconds < 30) {
           await postUserAchievement(4);
@@ -184,6 +195,33 @@ class _TimerComponentState extends State<TimerComponent> {
     return int.parse(minutes) > 0 ? "$minutes:$seconds.$milli" : "$seconds.$milli";
   }
 
+  void _showAchievementPopup(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ConfettiWidget(
+          confettiController: _confettiController,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            title: Center(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.cyan))),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(message, textAlign: TextAlign.center,style: const TextStyle(color: Colors.black54),),
+              ],
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +235,19 @@ class _TimerComponentState extends State<TimerComponent> {
       body: Stack(
         alignment: Alignment.center,
         children: [
-              InkWell(
+          // 🎉 Confetti Widget added here!
+          Container(
+            alignment: Alignment.center,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirection: 1.5 * 3.14, // Move from bottom to top
+              emissionFrequency: 0.1,
+              numberOfParticles: 10,
+              gravity: 0.1,
+              colors: const [Colors.red, Colors.blue, Colors.green, Colors.orange],
+            ),
+          ),
+          InkWell(
                 onTap: _toggleStartStop,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -216,74 +266,48 @@ class _TimerComponentState extends State<TimerComponent> {
                       ),
                     ),
                     // Control buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: _resetTimer,
-                          icon: const Icon(Icons.close, color: Colors.red),
-                          tooltip: 'Cancel Timer',
-                        ),
-                        IconButton(
-                          onPressed: () async {
-                            final formattedTime = _getFormattedTime();
-                            await _saveSolveTimeToPrefs(formattedTime);
-                            await _saveSolveTimeToDatabase(context);
-                          },
-                          icon: const Icon(Icons.done, color: Colors.green),
-                          tooltip: 'Save Solve',
-                        ),
-                        IconButton(
-                          onPressed: _showScramblePopup,
-                          icon: Icon(Icons.info_outline, color: iconColor),
-                          tooltip: 'See Scramble',
-                        ),
-                      ],
+                    Visibility(
+                      visible: showControlButtons,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: _resetTimer,
+                            icon: const Icon(Icons.close, color: Colors.red),
+                            tooltip: 'Cancel Timer',
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              showControlButtons=false;
+                              final formattedTime = _getFormattedTime();
+                              await _saveSolveTimeToPrefs(formattedTime);
+                              await _saveSolveTimeToDatabase(context);
+                            },
+                            icon: const Icon(Icons.done, color: Colors.green),
+                            tooltip: 'Save Solve',
+                          ),
+                          IconButton(
+                            onPressed: _showScramblePopup,
+                            icon: Icon(Icons.info_outline, color: iconColor),
+                            tooltip: 'See Scramble',
+                          ),
+                        ],
+                      ),
                     ),
+                    Visibility(
+                      visible: !showControlButtons && !_stopwatch.isRunning,
+                        child: Text("Tap to Start!")
+                    ),
+                    Visibility(
+                      visible: _stopwatch.isRunning,
+                        child: Text("Tap to Stop!")
+                    )
                   ],
                 ),
               ),
-
-          // 🎉 Confetti Widget added here!
-          Positioned(
-            bottom: 0, // Start from bottom
-            left: 0,
-            right: 0,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirection: -1.5 * 3.14, // Move from bottom to top
-              emissionFrequency: 0.05,
-              numberOfParticles: 10,
-              gravity: 0.1,
-              colors: const [Colors.red, Colors.blue, Colors.green, Colors.orange],
-            ),
-          ),
         ],
       ),
     );
   }
 
-}
-void _showAchievementPopup(BuildContext context, String title, String message) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: Center(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold))),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("OK"),
-          ),
-        ],
-      );
-    },
-  );
 }

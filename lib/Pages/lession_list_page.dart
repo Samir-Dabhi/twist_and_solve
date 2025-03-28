@@ -60,7 +60,7 @@ class _LessonListPageState extends State<LessonListPage> {
                 final lesson = lessons[index];
 
                 return GestureDetector(
-                  onTap: () => context.go('/videos/${lesson.lessonId}'),
+                  onTap: () => context.push('/videos/${lesson.lessonId}'),
                   child: Card(
                     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     elevation: 3,
@@ -78,7 +78,7 @@ class _LessonListPageState extends State<LessonListPage> {
                               ? Image.network(
                             lesson.imageUrl!,
                             width: double.infinity,
-                            height: 130,
+                            height: 180,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
@@ -102,20 +102,20 @@ class _LessonListPageState extends State<LessonListPage> {
                             children: [
                               Text(
                                 lesson.title ?? 'Untitled Lesson',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                style: const TextStyle(fontSize: 18),
                               ),
                               const SizedBox(height: 5),
                               Text(
-                                'Step ${lesson.stepOrder}',
-                                style: TextStyle(fontSize: 14, color: Colors.blue[700], fontWeight: FontWeight.w500),
+                                'step ${lesson.stepOrder}',
+                                style: const TextStyle(fontSize: 14, color: Color(0xFF00ADB5), fontWeight: FontWeight.w500),
                               ),
                               const SizedBox(height: 5),
-                              Text(
-                                lesson.description ?? 'No description available',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
+                              // Text(
+                              //   lesson.description ?? 'No description available',
+                              //   maxLines: 2,
+                              //   overflow: TextOverflow.ellipsis,
+                              //   style: const TextStyle(fontSize: 14, color: Colors.grey),
+                              // ),
                             ],
                           ),
                         ),

@@ -18,12 +18,16 @@ class VideoService {
         'Authorization': 'Bearer $token',
       },
     );
-
+    print(response.statusCode);
     if (response.statusCode == 200) {
       final List<dynamic> videoJson = json.decode(response.body);
       return videoJson.map((json) => VideoModel.fromJson(json)).toList();
-    } else {
-      throw Exception("Failed to load videos");
+    }
+    else if(response.statusCode==404) {
+      throw Exception("No Videos Found for this lesson");
+    }
+    else{
+      throw Exception("Faild To Fetch Video");
     }
   }
 

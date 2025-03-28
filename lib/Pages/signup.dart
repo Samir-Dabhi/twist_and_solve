@@ -4,6 +4,8 @@ import 'package:twist_and_solve/Service/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../constants.dart';
+
 class SignUpPage extends StatefulWidget {
   final AuthService authService;
 
@@ -20,6 +22,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController confirmPasswordController = TextEditingController();
   final TextEditingController otpController = TextEditingController(); // OTP input field
   late String token;
+  late String refreshToken;
 
       bool isLoading = false;
   bool showOtpField = false; // Toggle OTP field visibility
@@ -54,9 +57,10 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() => isLoading = true);
 
     try {
-      print(email);
+      debugPrint(email);
+      const String url = '${Constants.baseUrl}/emailauth';
       final response = await http.post(
-        Uri.parse('http://localhost:5167/emailauth'),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email}),
       );
@@ -96,8 +100,9 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() => isLoading = true);
 
     try {
+      const String url = '${Constants.baseUrl}/verifyemailotp';
       final response = await http.post(
-        Uri.parse('http://localhost:5167/verifyemailotp'),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'otp': otp}),
       );
@@ -106,7 +111,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        token = responseData['token'];
+        print(responseData);
+        token = responseData["token"]["accessToken"];
+        refreshToken = responseData["token"]["refreshToken"];
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('OTP verified successfully! Signing up...'), backgroundColor: Colors.green),
         );
@@ -147,8 +154,8 @@ class _SignUpPageState extends State<SignUpPage> {
     setState(() => isLoading = true);
 
     try {
-      final isAuthenticated = await widget.authService.signup(userName, email, password,token);
-
+      final isAuthenticated = await widget.authService.signup(userName, email, password,token,refreshToken);
+      print(isAuthenticated);
       setState(() => isLoading = false);
 
       if (isAuthenticated) {

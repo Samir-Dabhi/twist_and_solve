@@ -59,6 +59,7 @@ class AuthService {
   }
 
   Future<String?> refreshToken() async {
+    print('refreshToken called');
     final prefs = await SharedPreferences.getInstance();
     String? refreshToken = prefs.getString('refreshToken');
 
@@ -66,7 +67,7 @@ class AuthService {
       return null;
     }
 
-    final String url = '${Constants.baseUrl}/User/refresh';
+    const String url = '${Constants.baseUrl}/User/refresh-token';
 
     try {
       final response = await http.post(
@@ -74,11 +75,12 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({"refreshToken": refreshToken}),
       );
-
+      print("this is response of refreshToken"+response.toString());
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         String newAccessToken = responseData["accessToken"];
         await storeToken(newAccessToken);
+        await storeRefreshToken(responseData['refressToken']);
         return newAccessToken;
       } else {
         await logout(); // If refresh token fails, force logout
@@ -90,7 +92,7 @@ class AuthService {
     }
   }
 
-  Future<bool> signup(String username, String email, String password, String token) async {
+  Future<bool> signup(String username, String email, String password, String token,String refressToken) async {
     final String url = '${Constants.baseUrl}/User/';
 
     try {
@@ -111,9 +113,11 @@ class AuthService {
 
       if (response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        print(responseData['token']);
+        print('this is token in signin function -----------------------------------------');
+        print(responseData['token']['accessToken']);
         _isLoggedIn = true;
-        await storeToken(responseData["token"]);
+        await storeToken(responseData["token"]['accessToken']);
+        await storeRefreshToken(responseData['token']['refreshToken']);
         await _storeUserInfo(responseData['user']);
         return true;
       } else {

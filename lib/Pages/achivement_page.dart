@@ -132,15 +132,14 @@ class AchievementPage extends StatelessWidget {
     );
   }
 
-  // Show achievement details dialog
-  //TODO give proper discription when earned or not
+
   void _showAchievementDetails(BuildContext context, Achievements achievement) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Center(child: Text(achievement.title,style: const TextStyle(
-            color: Colors.blue
+            color: Color(0xFF00ADB5)
           ),)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -160,12 +159,9 @@ class AchievementPage extends StatelessWidget {
             ],
           ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close',
-                style: TextStyle(
-                  color: Colors.blue
-              ),),
+              child: const Text('Close'),
             ),
           ],
         );

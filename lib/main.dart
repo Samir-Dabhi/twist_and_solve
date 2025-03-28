@@ -16,7 +16,6 @@ import 'package:twist_and_solve/Pages/signup.dart';
 import 'package:twist_and_solve/Pages/splashscreen.dart';
 import 'package:twist_and_solve/Pages/time_list_page.dart';
 import 'package:twist_and_solve/Pages/video_list_page.dart';
-import 'package:twist_and_solve/Pages/video_player_screen.dart';
 import 'package:twist_and_solve/Pages/achivement_page.dart';
 import 'package:twist_and_solve/Service/auth_service.dart';
 
@@ -67,15 +66,24 @@ class _MyAppState extends State<MyApp> {
       routes: [
         GoRoute(
           path: '/login',
-          builder: (context, state) => LoginPage(authService: authService),
+          builder: (context, state) {
+            _isDarkMode=false;
+            return LoginPage(authService: authService);
+          },
         ),
         GoRoute(
           path: '/signup',
-          builder: (context, state) => SignUpPage(authService: authService),
+          builder: (context, state) {
+            _isDarkMode=false;
+            return SignUpPage(authService: authService);
+          },
         ),
         GoRoute(
           path: '/forgot',
-          builder: (context, state) => const SendOtpScreen(),
+          builder: (context, state) {
+            _isDarkMode=false;
+            return const SendOtpScreen();
+          },
         ),
         GoRoute(
           path: '/splash',
@@ -86,7 +94,9 @@ class _MyAppState extends State<MyApp> {
         GoRoute(
           path: '/videoPlayer',
           pageBuilder: (context, state) {
+            print('--------------------------------------------------------------------'+state.queryParams['videoUrl'].toString()+"============="+state.queryParams.toString());
             final videoUrl = state.queryParams['videoUrl'] ?? "https://www.youtube.com/watch?v=IWXpkfwimo0";
+            print("this is video Url in main.dart _______________________"+videoUrl);
             final videoName = state.queryParams['videoName'] ?? "Default Video";
 
             return CustomTransitionPage(
@@ -176,7 +186,7 @@ class _MyAppState extends State<MyApp> {
           bodyLarge: TextStyle(color: Colors.black),
           bodyMedium: TextStyle(color: Colors.black87),
         ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
+        elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: highlightColor,
           )
@@ -259,6 +269,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     // Call your logout method here
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear(); // Clear user data
+
     if (mounted) {
       context.go('/login'); // Navigate to login page after logout
     }
@@ -292,7 +303,7 @@ class _MainScaffoldState extends State<MainScaffold> {
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
-          title: const Center(child: Text('Cube Trainer')),
+          title: const Center(child: Text('Twist & Solve')),
           actions: [
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
@@ -363,7 +374,7 @@ class _MainScaffoldState extends State<MainScaffold> {
                   ),
                   ListTile(
                     leading: const Icon(Icons.timer),
-                    title: const Text('Times'),
+                    title: const Text('Solves'),
                     onTap: () {
                       context.go('/timelist');
                     },

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:twist_and_solve/Service/auth_service.dart';
+import 'package:twist_and_solve/Service/solve_service.dart';
 import 'package:twist_and_solve/constants.dart';
 
 class LessonModel {
@@ -61,3 +63,20 @@ Future<List<LessonModel>> fetchLessons() async {
   }
 }
 
+Future<Map<String, dynamic>> fetchLessonsByID(int lessonID) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+
+  final response = await http.get(
+    Uri.parse('${Constants.baseUrl}/Lesson/$lessonID'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+  if (response.statusCode == 200) {
+    return json.decode(response.body);
+  } else {
+    throw Exception('Failed to load lesson: ${response.body}');
+  }
+}
