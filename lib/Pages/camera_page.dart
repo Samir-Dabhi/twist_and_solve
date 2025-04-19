@@ -12,12 +12,19 @@ class CameraPage extends StatefulWidget {
 class _CameraPageState extends State<CameraPage> {
   CameraController? controller;
   List<CameraDescription> cameras = [];
+  GlobalKey _widgetkey = GlobalKey();
   List<List<Color>> _detectedColors = List.generate(3, (_) => List.filled(3, Colors.grey));
+
+  int imageWidth=0;
+  int imageHeight=0;
+  double diffX = 0;
+  double diffY = 0;
 
   @override
   void initState() {
     super.initState();
     initCamera();
+
   }
 
   @override
@@ -32,7 +39,17 @@ class _CameraPageState extends State<CameraPage> {
     cameras = await availableCameras();
     controller = CameraController(cameras[0], ResolutionPreset.medium);
     await controller!.initialize();
-    controller!.startImageStream(_processCameraImage);
+    controller!.startImageStream((image) {
+    imageWidth = image.width;
+    imageHeight = image.height;
+      final RenderBox renderBox = _widgetkey.currentContext!.findRenderObject() as RenderBox;
+      final size = renderBox.size;
+      print('Width: ${size.width}, Height: ${size.height}');
+      diffX=(imageWidth-size.width)/2;
+      diffY=(imageHeight-size.height)/2;
+      setState(() {});
+      _processCameraImage(image);
+    },);
     setState(() {});
 
   }
@@ -42,9 +59,12 @@ class _CameraPageState extends State<CameraPage> {
     final dy = height ~/ 6;
     print(dx);
     print(dy);
-    return List.generate(3, (i) =>
-        List.generate(3, (j) => Offset((j * 2 + 1) * dx.toDouble(), (i * 2 + 1) * dy.toDouble()))
-    );
+    List<List<Offset>> offsetList = [
+      [Offset((imageWidth / 2)-(imageHeight/4),(imageHeight / 2)+(imageHeight/4)), Offset((imageWidth / 2)-(imageHeight/4),(imageHeight / 2)), Offset((imageWidth / 2)-(imageHeight/4),(imageHeight / 2)-(imageHeight/4))],
+      [Offset((imageWidth / 2),(imageHeight / 2)+(imageHeight/4)), Offset((imageWidth / 2),(imageHeight / 2)), Offset((imageWidth / 2),(imageHeight / 2)-(imageHeight/4))],
+      [Offset((imageWidth / 2)+(imageHeight/4),(imageHeight / 2)+(imageHeight/4)), Offset((imageWidth / 2)+(imageHeight/4),(imageHeight / 2)), Offset((imageWidth / 2)+(imageHeight/4),(imageHeight / 2)-(imageHeight/4))],
+    ];
+    return offsetList;
   }
 
   void _processCameraImage(CameraImage image) {
@@ -59,7 +79,7 @@ class _CameraPageState extends State<CameraPage> {
       for (int j = 0; j < points[i].length; j++) {
         final point = points[i][j];
         final rgb = getAverageRGBAtImage(convertYUV420ToImage(image), point.dx.toInt(), point.dy.toInt());
-        final colorName = getColorName(rgb[0], rgb[1], rgb[2]);
+        final colorName = getColorNameFromHSV(rgb[0], rgb[1], rgb[2]);
 
         // Update the detected color at the current grid point
         _detectedColors[i][j] = Color.fromRGBO(rgb[0], rgb[1], rgb[2], 0.8);
@@ -122,36 +142,91 @@ class _CameraPageState extends State<CameraPage> {
     return [r ~/ count, g ~/ count, b ~/ count];
   }
 
+  Map<String, double> rgbToHsv(int r, int g, int b) {
+    double rf = r / 255;
+    double gf = g / 255;
+    double bf = b / 255;
 
-  String getColorName(int r, int g, int b) {
-    // Dominant red
-    if (r > 150 && r > g + 50 && r > b + 50) return "Red";
-    // Dominant green
-    if (g > 150 && g > r + 50 && g > b + 50) return "Green";
-    // Dominant blue
-    if (b > 150 && b > r + 50 && b > g + 50) return "Blue";
-    // Yellow = high red + green, low blue
-    if (r > 150 && g > 150 && b < 100) return "Yellow";
-    // White = all high
-    if (r > 180 && g > 180 && b > 180) return "White";
-    // Black = all low
-    if (r < 50 && g < 50 && b < 50) return "Black";
+    double max = [rf, gf, bf].reduce((a, b) => a > b ? a : b);
+    double min = [rf, gf, bf].reduce((a, b) => a < b ? a : b);
+    double delta = max - min;
+
+    double h = 0;
+    if (delta != 0) {
+      if (max == rf) {
+        h = 60 * (((gf - bf) / delta) % 6);
+      } else if (max == gf) {
+        h = 60 * (((bf - rf) / delta) + 2);
+      } else if (max == bf) {
+        h = 60 * (((rf - gf) / delta) + 4);
+      }
+    }
+
+    if (h < 0) h += 360;
+
+    double s = max == 0 ? 0 : delta / max;
+    double v = max;
+
+    return {
+      'h': h,     // Hue in degrees (0 - 360)
+      's': s,     // Saturation (0 - 1)
+      'v': v,     // Value (0 - 1)
+    };
+  }
+
+  String getColorNameFromHSV(int r, int g, int b) {
+    final hsv = rgbToHsv(r, g, b);
+    final h = hsv['h']!;
+    final s = hsv['s']!;
+    final v = hsv['v']!;
+
+    if (v < 0.2) return "Black";
+    if (s < 0.15 && v > 0.85) return "White";
+    if (s < 0.15) return "White";
+
+    if (h < 20 || h >= 340) return "Red";
+    if (h >= 20 && h < 50) return "Orange";
+    if (h >= 50 && h < 70) return "Yellow";
+    if (h >= 70 && h < 170) return "Green";
+    if (h >= 170 && h < 260) return "Blue";
+    if (h >= 260 && h < 320) return "Purple";
 
     return "Unknown";
   }
 
-  Color _mapColorNameToColor(String name) {
-    switch (name) {
-      case 'Red': return Colors.red;
-      case 'Green': return Colors.green;
-      case 'Blue': return Colors.blue;
-      case 'Yellow': return Colors.yellow;
-      case 'White': return Colors.white;
-      case 'Black': return Colors.black;
-      default: return Colors.grey;
-    }
-  }
 
+  // String getColorName(int r, int g, int b) {
+  //   // Define typical RGB values for Rubik's Cube colors
+  //   const Map<String, List<int>> knownColors = {
+  //     'Red': [200, 30, 30],
+  //     'Green': [30, 200, 30],
+  //     'Blue': [30, 30, 200],
+  //     'Yellow': [255, 255, 0],
+  //     'White': [250, 250, 250],
+  //     'Orange': [255, 140, 0],
+  //     'Black': [0, 0, 0],
+  //   };
+  //
+  //   double minDistance = double.infinity;
+  //   String closestColor = 'Unknown';
+  //
+  //   for (var entry in knownColors.entries) {
+  //     final kr = entry.value[0];
+  //     final kg = entry.value[1];
+  //     final kb = entry.value[2];
+  //
+  //     double distance = ((r - kr) * (r - kr) +
+  //         (g - kg) * (g - kg) +
+  //         (b - kb) * (b - kb)).toDouble();
+  //
+  //     if (distance < minDistance) {
+  //       minDistance = distance;
+  //       closestColor = entry.key;
+  //     }
+  //   }
+  //
+  //   return closestColor;
+  // }
 
 
   @override
@@ -164,103 +239,70 @@ class _CameraPageState extends State<CameraPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Camera Page")),
-      body: Container(
-        color: Colors.black,
-        child: Stack(
-            children: [
-              Center(
-                child: AspectRatio(
-                  aspectRatio: 1, // Square
-                  child: ClipRect(
-                    child: OverflowBox(
-                      alignment: Alignment.center,
-                      maxHeight: double.infinity,
-                      maxWidth: double.infinity,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: controller!.value.previewSize!.height,
-                          height: controller!.value.previewSize!.width,
-                          child: CameraPreview(controller!),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Center(child: _buildOverlayGrid()),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final points = getGridSamplePoints(
-                    constraints.maxWidth.toInt(),
-                    constraints.maxHeight.toInt(),
-                  );
-
-                  return Stack(
-                    children: points.expand((row) => row).map((point) {
-                      return Positioned(
-                        left: point.dx - 5,
-                        top: point.dy - 5,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Color.fromRGBO(255, 0, 0, 1),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
-            ]
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final file = await controller!.takePicture();
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Picture saved: ${file.path}"),
-          ));
-        },
-        child: const Icon(Icons.camera_alt),
+      body: Stack(
+        key: _widgetkey,
+        children: [
+          Center(child: CameraPreview(controller!)),
+           _buildOverlayGrid(),
+        ],
       ),
     );
   }
   Widget _buildOverlayGrid() {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: LayoutBuilder(builder: (context, constraints) {
-        final cellSize = constraints.maxWidth / 3;
-        return Stack(
-          children: [
-            for (int row = 0; row < 3; row++)
-              for (int col = 0; col < 3; col++)
-                Positioned(
-                  left: col * cellSize,
-                  top: row * cellSize,
-                  width: cellSize,
-                  height: cellSize,
-                  child: Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: _detectedColors[row][col],
-                          border: Border.all(color: Colors.black, width: 1.5),
-                        ),
-                      ),
-                      Center(
-                        child: Text(row.toString()+" "+col.toString())
-                      ),
-                    ],
-                  ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Top black space
+        Expanded(
+          child: Container(
+            color: Colors.white,
+          ),
+        ),
 
-                )
-          ],
-        );
-      }),
+        // The grid itself
+        AspectRatio(
+          aspectRatio: 1,
+          child: LayoutBuilder(builder: (context, constraints) {
+            final cellSize = constraints.maxWidth / 3;
+            return Stack(
+              children: [
+                for (int row = 0; row < 3; row++)
+                  for (int col = 0; col < 3; col++)
+                    Positioned(
+                      left: col * cellSize,
+                      top: row * cellSize,
+                      width: cellSize,
+                      height: cellSize,
+                      child: Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.black, width: 1.5),
+                            ),
+                            child: Center(
+                              child: Container(
+                                height: 20,
+                                width: 20,
+                                color: _detectedColors[row][col],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+              ],
+            );
+          }),
+        ),
+
+        // Bottom black space
+        Expanded(
+          child: Container(
+            color: Colors.white,
+          ),
+        ),
+      ],
     );
   }
+
 }

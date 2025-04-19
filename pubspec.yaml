@@ -47,7 +47,7 @@ dependencies:
   confetti: ^0.7.0
   youtube_player_flutter: ^9.1.1
   fluttertoast: ^8.2.12
-  camera:
+  camera: ^0.11.1
   image:
   path_provider:
   path:
