@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:twist_and_solve/Components/setting_component.dart';
 import 'package:twist_and_solve/Pages/algorithm_category.dart';
 import 'package:twist_and_solve/Pages/algorithm_page.dart';
+import 'package:twist_and_solve/Pages/camera_page.dart';
 import 'package:twist_and_solve/Pages/send_otp.dart';
 import 'package:twist_and_solve/Pages/home_page.dart';
 import 'package:twist_and_solve/Pages/lession_list_page.dart';
@@ -145,6 +146,7 @@ class _MyAppState extends State<MyApp> {
               },
             ),
             GoRoute(path: '/rubik', builder: (context, state) => const RubikCubePage()),
+            GoRoute(path: '/Scan', builder: (context, state) => const CameraPage()),
           ],
         ),
       ],
@@ -423,6 +425,15 @@ class _MainScaffoldState extends State<MainScaffold> {
                     title: const Text('3d Model of Rubik\'s Cube'),
                     onTap: () {
                       context.go('/rubik');
+                      Scaffold.of(context).closeDrawer();
+                    }, // Call the logout method
+                  ),
+
+                  ListTile(
+                    leading: const Icon(CupertinoIcons.camera),
+                    title: const Text('Scan'),
+                    onTap: () {
+                      context.go('/Scan');
                       Scaffold.of(context).closeDrawer();
                     }, // Call the logout method
                   ),

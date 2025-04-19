@@ -47,6 +47,10 @@ dependencies:
   confetti: ^0.7.0
   youtube_player_flutter: ^9.1.1
   fluttertoast: ^8.2.12
+  camera:
+  image:
+  path_provider:
+  path:
 
 dev_dependencies:
   flutter_test:
