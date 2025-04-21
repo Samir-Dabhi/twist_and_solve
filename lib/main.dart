@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:twist_and_solve/Components/cube_display_widget.dart';
 import 'package:twist_and_solve/Components/setting_component.dart';
 import 'package:twist_and_solve/Pages/algorithm_category.dart';
 import 'package:twist_and_solve/Pages/algorithm_page.dart';
@@ -147,6 +148,14 @@ class _MyAppState extends State<MyApp> {
             ),
             GoRoute(path: '/rubik', builder: (context, state) => const RubikCubePage()),
             GoRoute(path: '/Scan', builder: (context, state) => const CameraPage()),
+            GoRoute(
+              path: '/cube',
+              name: 'cube',
+              builder: (context, state) {
+                final cube = state.extra as List<List<List<String>>>; // safely cast
+                return CubeDisplay(cube: cube);
+              },
+            ),
           ],
         ),
       ],
